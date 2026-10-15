@@ -1,4 +1,4 @@
-const CACHE = 'rektion-pwa-v3';
+const CACHE = 'rektion-pwa-v4-xlsxfix';
 const APP_SHELL = [
   './',
   './index.html',
