@@ -10,6 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
 <meta name="theme-color" content="#145b4c" />
+<meta name="rektion-build" content="2026-10-15-xlsx-v5" />
 <title>Rektion — интервальные повторения немецкого управления</title>
 <style>
 @font-face{font-family:"AdobeGaramondLocal";src:local("Adobe Garamond Pro"),local("Adobe Garamond"),local("AGaramondPro-Regular");font-style:normal;font-weight:400;font-display:swap;unicode-range:U+0000-024F,U+1E00-1EFF;}
@@ -750,42 +751,66 @@ body:before{
   function clearForm(){editId=null;['#fRu','#fDe','#fModel','#fTags','#fNote'].forEach(x=>$(x).value='');$('#addOneBtn').textContent='Добавить';$('#cancelEditBtn').classList.add('hidden');}
   function addOne(){const ru=$('#fRu').value.trim(),de=$('#fDe').value.trim();if(!ru||!de)return toast('Нужны русский и немецкий тексты');const obj={ru,de,model:$('#fModel').value.trim(),tags:$('#fTags').value.trim(),note:$('#fNote').value.trim()};if(editId){Object.assign(state.cards.find(c=>c.id===editId),obj);toast('Карточка сохранена')}else{state.cards.push({id:uid(),...obj,created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});toast('Карточка добавлена')}save();clearForm();renderHome();}
   function xlsxColIndex(ref){const m=String(ref||'').match(/^([A-Z]+)/i);if(!m)return 0;let n=0;for(const ch of m[1].toUpperCase())n=n*26+(ch.charCodeAt(0)-64);return n-1;}
-  function xmlEls(node,name){
-    if(!node)return [];
-    try{const ns=[...node.getElementsByTagNameNS('*',name)];if(ns.length)return ns;}catch{}
-    return [...node.getElementsByTagName(name)];
+  function xmlDecode(s){
+    return String(s??'')
+      .replace(/&#x([0-9a-f]+);/gi,(_,h)=>String.fromCodePoint(parseInt(h,16)))
+      .replace(/&#(\d+);/g,(_,d)=>String.fromCodePoint(parseInt(d,10)))
+      .replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
   }
-  function xmlText(node){return node?xmlEls(node,'t').map(x=>x.textContent||'').join(''):'';}
-  function normHeader(s){return String(s||'').trim().toLowerCase().replace(/ё/g,'е').replace(/[._\-–—/\\()]+/g,' ').replace(/\s+/g,' ');}
-  function headerKind(s){const h=normHeader(s);if(['русский','русское предложение','рус','ru','russian'].includes(h))return 'ru';if(['deutsch','немецкий','немецкое предложение','de','german'].includes(h))return 'de';if(['модель','глагол','глагол модель','управление','model','verb model'].includes(h))return 'model';if(['теги','тег','tags','tag'].includes(h))return 'tags';if(['комментарий','подсказка','примечание','note','comment','comments'].includes(h))return 'note';return '';}
+  function xmlAttr(attrs,name){
+    const m=String(attrs||'').match(new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(["\\\'])(.*?)\\1','i'));
+    return m?xmlDecode(m[2]):'';
+  }
+  function xmlTagTexts(xml,name){
+    const esc=String(name).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const re=new RegExp('<(?:[A-Za-z_][\\w.-]*:)?'+esc+'\\b[^>]*>([\\s\\S]*?)<\\/(?:[A-Za-z_][\\w.-]*:)?'+esc+'>','gi');
+    return [...String(xml||'').matchAll(re)].map(m=>xmlDecode(m[1].replace(/<[^>]*>/g,'')));
+  }
   async function readXlsxRows(file){
     if(!window.JSZip)throw new Error('Не найден локальный модуль чтения Excel');
     const zip=await JSZip.loadAsync(await file.arrayBuffer());
-    const parser=new DOMParser();
+
+    // Shared strings are optional. Parse XML as text so namespace prefixes
+    // (x:row, x:c, etc.) behave identically in Safari/iOS and desktop browsers.
     let shared=[];
     const ss=zip.file('xl/sharedStrings.xml');
-    if(ss){const doc=parser.parseFromString(await ss.async('text'),'application/xml');shared=[...doc.getElementsByTagName('si')].map(xmlText);}
-    let sheetPath='';
-    const wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');
-    if(wbFile&&relFile){
-      const wb=parser.parseFromString(await wbFile.async('text'),'application/xml');
-      const first=xmlEls(wb,'sheet')[0];
-      const rid=first&&(first.getAttribute('r:id')||first.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id'));
-      if(rid){
-        const rels=parser.parseFromString(await relFile.async('text'),'application/xml');
-        const rel=xmlEls(rels,'Relationship').find(x=>x.getAttribute('Id')===rid);
-        if(rel){let target=rel.getAttribute('Target')||'';target=target.replace(/^\//,'');sheetPath=target.startsWith('xl/')?target:'xl/'+target.replace(/^\.\//,'');}
-      }
+    if(ss){
+      const xml=await ss.async('text');
+      const siRe=/<(?:[A-Za-z_][\w.-]*:)?si\b[^>]*>([\s\S]*?)<\/(?:[A-Za-z_][\w.-]*:)?si>/gi;
+      shared=[...xml.matchAll(siRe)].map(m=>xmlTagTexts(m[1],'t').join(''));
     }
-    if(!sheetPath||!zip.file(sheetPath)){const names=Object.keys(zip.files).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/i.test(n)).sort();sheetPath=names[0]||'';}
-    const sf=sheetPath&&zip.file(sheetPath);if(!sf)throw new Error('В книге не найден лист');
-    const doc=parser.parseFromString(await sf.async('text'),'application/xml');
+
+    // For Rektion we import the first worksheet. This avoids fragile XML
+    // relationship parsing and works with Excel, Numbers, LibreOffice and our template.
+    const names=Object.keys(zip.files).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/i.test(n));
+    names.sort((a,b)=>(+(a.match(/sheet(\d+)\.xml/i)||[,999999])[1])-(+(b.match(/sheet(\d+)\.xml/i)||[,999999])[1]));
+    const sheetPath=names[0]||'';
+    const sf=sheetPath&&zip.file(sheetPath);
+    if(!sf)throw new Error('В книге не найден первый лист');
+    const xml=await sf.async('text');
+
     const out=[];
-    for(const row of xmlEls(doc,'row')){
+    const rowRe=/<(?:[A-Za-z_][\w.-]*:)?row\b[^>]*>([\s\S]*?)<\/(?:[A-Za-z_][\w.-]*:)?row>/gi;
+    for(const rm of xml.matchAll(rowRe)){
       const arr=[];
-      for(const c of xmlEls(row,'c')){
-        const idx=xlsxColIndex(c.getAttribute('r'));const type=c.getAttribute('t')||'';let val='';
-        if(type==='inlineStr')val=xmlText(c);else{const v=xmlEls(c,'v')[0];const raw=v?v.textContent:'';if(type==='s')val=shared[Number(raw)]??'';else if(type==='b')val=raw==='1'?'TRUE':'FALSE';else val=raw??'';}
+      const rowXml=rm[1];
+      const cellRe=/<(?:[A-Za-z_][\w.-]*:)?c\b([^>]*)>([\s\S]*?)<\/(?:[A-Za-z_][\w.-]*:)?c>/gi;
+      for(const cm of rowXml.matchAll(cellRe)){
+        const attrs=cm[1], body=cm[2];
+        const ref=xmlAttr(attrs,'r');
+        const idx=xlsxColIndex(ref);
+        const type=(xmlAttr(attrs,'t')||'').toLowerCase();
+        let val='';
+        if(type==='inlinestr'){
+          val=xmlTagTexts(body,'t').join('');
+        }else{
+          const vals=xmlTagTexts(body,'v');
+          const raw=vals.length?vals[0]:'';
+          if(type==='s') val=shared[Number(raw)]??'';
+          else if(type==='b') val=raw==='1'?'TRUE':'FALSE';
+          else if(type==='str') val=raw;
+          else val=raw;
+        }
         arr[idx]=String(val??'');
       }
       out.push(arr);
