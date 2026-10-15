@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
 <meta name="theme-color" content="#145b4c" />
-<meta name="rektion-build" content="2026-10-15-xlsx-v5" />
+<meta name="rektion-build" content="2026-10-15-voice-v6" />
 <title>Rektion — интервальные повторения немецкого управления</title>
 <style>
 @font-face{font-family:"AdobeGaramondLocal";src:local("Adobe Garamond Pro"),local("Adobe Garamond"),local("AGaramondPro-Regular");font-style:normal;font-weight:400;font-display:swap;unicode-range:U+0000-024F,U+1E00-1EFF;}
@@ -418,6 +418,10 @@ body:before{
             <div class="field span2"><label>Режим занятия</label><select id="setStudyMode"><option value="builder">Конструктор слов: 2 × 4 варианта</option><option value="flip">Обычная карточка с показом ответа</option></select></div>
             <div class="field span2"><label>Направление обычных карточек</label><select id="setDirection"><option value="ru-de">Русский → немецкий (активное воспроизведение)</option><option value="de-ru">Немецкий → русский (понимание)</option><option value="mixed">Смешанное</option></select></div>
             <div class="field span2"><label><input id="setAutoSpeak" type="checkbox" /> Автоматически озвучивать немецкое предложение после сборки / открытия ответа</label></div>
+            <div class="field span2"><label>Немецкий голос</label><select id="setVoice"><option value="">Автоматически — системный немецкий голос</option></select></div>
+            <div class="field"><label>Темп озвучки</label><select id="setSpeechRate"><option value="0.82">0,82 — медленно</option><option value="0.88">0,88 — естественно</option><option value="0.92">0,92 — чуть быстрее</option><option value="1">1,00 — обычный</option></select></div>
+            <div class="field"><label>&nbsp;</label><button class="secondary" id="testVoiceBtn" type="button">Прослушать голос</button></div>
+            <div class="field span2"><div class="help" id="voiceHelp">Показываются немецкие голоса, которые iOS разрешает использовать в Safari/Rektion. Улучшенный голос сначала нужно скачать в настройках iPhone.</div></div>
           </div>
           <div class="controls" style="margin-top:14px"><button class="primary" id="saveSettingsBtn">Сохранить</button></div>
         </div>
@@ -514,7 +518,7 @@ body:before{
   function baseState(){
     return {
       cards: starter.map(x => ({id:uid(),ru:x[0],de:x[1],model:x[2],tags:x[3],note:x[4],created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]})),
-      settings:{newLimit:15,reviewLimit:0,direction:'ru-de',studyMode:'builder',autoSpeak:true,theme:'light'},
+      settings:{newLimit:15,reviewLimit:0,direction:'ru-de',studyMode:'builder',autoSpeak:true,voiceURI:'',speechRate:.88,theme:'light'},
       logs:[], version:1
     };
   }
@@ -522,6 +526,8 @@ body:before{
   try{ state=JSON.parse(localStorage.getItem(KEY)) || baseState(); }catch{ state=baseState(); }
   if(!state.settings) state.settings=baseState().settings;
   if(!state.settings.studyMode) state.settings.studyMode='builder';
+  if(state.settings.voiceURI==null) state.settings.voiceURI='';
+  if(!Number.isFinite(+state.settings.speechRate)) state.settings.speechRate=.88;
   if(!state.logs) state.logs=[];
   if(!state.cards) state.cards=[];
   let currentView='home', queue=[], qIndex=0, revealed=false, lastAction=null, extraMode=false, editId=null;
@@ -739,7 +745,48 @@ body:before{
     state.logs.push({t,date:todayKey(t),cardId:c.id,grade:g,wasNew,extra:extraMode}); lastAction={cardId:c.id,before,logLen,qIndex}; save(); qIndex++; renderStudy(); renderHome();
   }
   function undo(){ if(!lastAction)return toast('Нечего отменять'); const idx=state.cards.findIndex(c=>c.id===lastAction.cardId); if(idx>=0)state.cards[idx]=lastAction.before; state.logs=state.logs.slice(0,lastAction.logLen); qIndex=lastAction.qIndex; lastAction=null; save();renderStudy();renderHome();toast('Последний ответ отменён'); }
-  function speak(text){ if(!('speechSynthesis' in window)) return toast('Озвучка не поддерживается браузером'); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.92; const voices=speechSynthesis.getVoices(); const v=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('de')); if(v)u.voice=v;speechSynthesis.speak(u); }
+  function germanVoices(){
+    if(!('speechSynthesis' in window)) return [];
+    return speechSynthesis.getVoices()
+      .filter(v=>v.lang&&v.lang.toLowerCase().startsWith('de'))
+      .sort((a,b)=>Number(b.localService)-Number(a.localService)||a.lang.localeCompare(b.lang)||a.name.localeCompare(b.name));
+  }
+  function voiceKey(v){return v.voiceURI||`${v.name}|${v.lang}`;}
+  function chosenVoice(overrideURI){
+    const voices=germanVoices();
+    const wanted=overrideURI!==undefined?overrideURI:(state.settings.voiceURI||'');
+    return voices.find(v=>voiceKey(v)===wanted)
+      || voices.find(v=>v.lang&&v.lang.toLowerCase()==='de-de'&&v.localService)
+      || voices.find(v=>v.lang&&v.lang.toLowerCase()==='de-de')
+      || voices.find(v=>v.localService)
+      || voices[0]
+      || null;
+  }
+  function populateVoiceSelect(){
+    const sel=$('#setVoice'); if(!sel)return;
+    const current=sel.value||state.settings.voiceURI||'';
+    const voices=germanVoices();
+    sel.innerHTML='<option value="">Автоматически — лучший немецкий голос</option>'+voices.map(v=>`<option value="${esc(voiceKey(v))}">${esc(v.name)} — ${esc(v.lang)}${v.localService?' · локальный':''}</option>`).join('');
+    if([...sel.options].some(o=>o.value===current)) sel.value=current; else sel.value='';
+    const help=$('#voiceHelp');
+    if(help) help.textContent=voices.length?`Найдено немецких голосов: ${voices.length}. Выбери голос и нажми «Прослушать голос».`:'Немецкие голоса пока не появились. Открой настройки iPhone, скачай немецкий голос и вернись сюда.';
+  }
+  function speakWith(text,voiceURI,rate){
+    if(!('speechSynthesis' in window)) return toast('Озвучка не поддерживается браузером');
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='de-DE';
+    u.rate=Math.min(1.25,Math.max(.6,Number(rate)||.88));
+    const v=chosenVoice(voiceURI); if(v){u.voice=v;u.lang=v.lang||'de-DE';}
+    speechSynthesis.speak(u);
+  }
+  function speak(text){speakWith(text,undefined,state.settings.speechRate);}
+  function testSelectedVoice(){
+    const sel=$('#setVoice'), rate=$('#setSpeechRate');
+    const uri=sel?sel.value:'';
+    const r=rate?rate.value:.88;
+    speakWith('Guten Tag. Ich bereite mich auf die Prüfung vor und freue mich auf das neue Semester.',uri,r);
+  }
   function renderCards(){
     const q=$('#searchInput').value.trim().toLowerCase(); const list=state.cards.filter(c=>!q||[c.ru,c.de,c.model,c.tags,c.note].join(' ').toLowerCase().includes(q)); const el=$('#cardsList');
     if(!list.length){el.innerHTML='<div class="empty">Ничего не найдено</div>';return}
@@ -838,9 +885,13 @@ body:before{
     $('#stNew').textContent=state.cards.filter(c=>c.reps===0).length;$('#stLearning').textContent=state.cards.filter(c=>c.reps>0&&c.interval<21).length;$('#stMature').textContent=matureCount();$('#stLapses').textContent=state.cards.reduce((a,c)=>a+(c.lapses||0),0);
     for(const g of ['again','hard','good','easy'])$(`#st${g[0].toUpperCase()+g.slice(1)}`).textContent=state.logs.filter(l=>l.grade===g).length;
   }
-  function renderSettings(){ $('#setNewLimit').value=state.settings.newLimit;$('#setReviewLimit').value=state.settings.reviewLimit;$('#setStudyMode').value=state.settings.studyMode||'builder';$('#setDirection').value=state.settings.direction;$('#setAutoSpeak').checked=!!state.settings.autoSpeak; }
+  function renderSettings(){
+    $('#setNewLimit').value=state.settings.newLimit;$('#setReviewLimit').value=state.settings.reviewLimit;$('#setStudyMode').value=state.settings.studyMode||'builder';$('#setDirection').value=state.settings.direction;$('#setAutoSpeak').checked=!!state.settings.autoSpeak;
+    $('#setSpeechRate').value=String(state.settings.speechRate||.88); populateVoiceSelect();
+    setTimeout(populateVoiceSelect,250); setTimeout(populateVoiceSelect,1000);
+  }
   function applyTheme(){document.documentElement.dataset.theme=state.settings.theme||'light';}
-  function saveSettings(){state.settings.newLimit=Math.max(0,+$('#setNewLimit').value||0);state.settings.reviewLimit=Math.max(0,+$('#setReviewLimit').value||0);state.settings.studyMode=$('#setStudyMode').value;state.settings.direction=$('#setDirection').value;state.settings.autoSpeak=$('#setAutoSpeak').checked;save();renderHome();toast('Настройки сохранены')}
+  function saveSettings(){state.settings.newLimit=Math.max(0,+$('#setNewLimit').value||0);state.settings.reviewLimit=Math.max(0,+$('#setReviewLimit').value||0);state.settings.studyMode=$('#setStudyMode').value;state.settings.direction=$('#setDirection').value;state.settings.autoSpeak=$('#setAutoSpeak').checked;state.settings.voiceURI=$('#setVoice').value||'';state.settings.speechRate=Math.min(1.25,Math.max(.6,+$('#setSpeechRate').value||.88));save();renderHome();toast('Настройки сохранены')}
   function download(name,text,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
   function exportJson(){download(`rektion-backup-${todayKey()}.json`,JSON.stringify(state,null,2));}
   function templateCsv(){download('rektion-import-template.tsv','Русский\tDeutsch\tМодель\tТеги\tКомментарий\nЯ подаю заявление на визу.\tIch beantrage ein Visum.\tbeantragen + A\tVerwaltung\tофициальный запрос\n','text/tab-separated-values;charset=utf-8')}
@@ -852,17 +903,21 @@ body:before{
   $('#speakPromptBtn').onclick=()=>{const c=queue[qIndex];if(c)speak(c.de)};$('#speakAnswerBtn').onclick=()=>{const c=queue[qIndex];if(c)speak(c.de)};
   $('#searchInput').oninput=renderCards;$('#addOneBtn').onclick=addOne;$('#cancelEditBtn').onclick=clearForm;$('#bulkBtn').onclick=bulkImport;$('#downloadTemplateBtn').onclick=templateCsv;
   $('#xlsxFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(f)await importXlsxFile(f);e.target.value='';};
-  $('#saveSettingsBtn').onclick=saveSettings;$('#exportBtn').onclick=exportJson;$('#resetScheduleBtn').onclick=resetSchedule;$('#resetAllBtn').onclick=resetAll;
+  $('#saveSettingsBtn').onclick=saveSettings;$('#testVoiceBtn').onclick=testSelectedVoice;$('#exportBtn').onclick=exportJson;$('#resetScheduleBtn').onclick=resetSchedule;$('#resetAllBtn').onclick=resetAll;
   $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.cards||!s.settings)throw 0;state=s;save();applyTheme();renderHome();toast('Резервная копия импортирована')}catch{toast('Не удалось прочитать файл')}e.target.value='';};
   $('#themeBtn').onclick=()=>{state.settings.theme=(state.settings.theme==='dark'?'light':'dark');save();applyTheme();};
   document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.code==='Space'&&currentView==='study'&&(state.settings.studyMode||'builder')!=='builder'){e.preventDefault();reveal()}if(currentView==='study'&&revealed&&['1','2','3','4'].includes(e.key)){grade({1:'again',2:'hard',3:'good',4:'easy'}[e.key])}if(e.key.toLowerCase()==='z'&&currentView==='study')undo();});
+  if('speechSynthesis' in window){
+    speechSynthesis.onvoiceschanged=()=>{if(currentView==='settings')populateVoiceSelect();};
+    setTimeout(()=>speechSynthesis.getVoices(),50);
+  }
   applyTheme(); renderHome();
 })();
 </script>
 
 <script>
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(() => {}));
 }
 </script>
 </body>
