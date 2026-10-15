@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Rektion" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+<meta name="theme-color" content="#145b4c" />
+<title>Rektion — интервальные повторения немецкого управления</title>
+<style>
+@font-face{font-family:"AdobeGaramondLocal";src:local("Adobe Garamond Pro"),local("Adobe Garamond"),local("AGaramondPro-Regular");font-style:normal;font-weight:400;font-display:swap;unicode-range:U+0000-024F,U+1E00-1EFF;}
+@font-face{font-family:"AdobeGaramondLocal";src:local("Adobe Garamond Pro Semibold"),local("AGaramondPro-Semibold"),local("Adobe Garamond Pro Bold"),local("AGaramondPro-Bold");font-style:normal;font-weight:600;font-display:swap;unicode-range:U+0000-024F,U+1E00-1EFF;}
+:root{
+  --bg:#f5f7fb;--panel:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --accent:#2563eb;--accent2:#1d4ed8;--danger:#dc2626;--warn:#d97706;--good:#15803d;--easy:#6d28d9;
+  --shadow:0 18px 50px rgba(15,23,42,.08);--radius:22px;
+}
+[data-theme="dark"]{
+  --bg:#0b1220;--panel:#111a2b;--text:#e5edf8;--muted:#93a4bb;--line:#24324a;
+  --accent:#60a5fa;--accent2:#93c5fd;--danger:#f87171;--warn:#fbbf24;--good:#4ade80;--easy:#c4b5fd;
+  --shadow:0 18px 50px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.app{max-width:1180px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left))}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,var(--accent),#8b5cf6);display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:var(--shadow)}
+.brand h1{font-size:20px;margin:0}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.top-actions{display:flex;gap:8px}.iconbtn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:9px 11px}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.nav button{border:0;background:transparent;color:var(--muted);padding:9px 13px;border-radius:11px;font-weight:700}.nav button.active{background:var(--panel);color:var(--text);box-shadow:0 1px 0 var(--line)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}.hero{grid-column:span 8}.side{grid-column:span 4}.full{grid-column:1/-1}.half{grid-column:span 6}
+.hero h2{font-size:34px;line-height:1.08;margin:0 0 10px;max-width:680px}.hero p{color:var(--muted);font-size:16px;line-height:1.6;max-width:720px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}.stat{padding:13px;border:1px solid var(--line);border-radius:16px}.stat b{font-size:24px;display:block}.stat span{font-size:12px;color:var(--muted)}
+.primary{border:0;background:var(--accent);color:white;border-radius:14px;padding:12px 16px;font-weight:800}.primary:hover{background:var(--accent2)}.secondary{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:14px;padding:11px 15px;font-weight:700}.danger{color:var(--danger)}
+.study-wrap{max-width:840px;margin:0 auto}.study-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;color:var(--muted);font-size:13px}.progress{height:7px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:18px}.progress>div{height:100%;background:var(--accent);width:0%}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);min-height:420px;padding:30px;display:flex;flex-direction:column;justify-content:space-between}.tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:999px;padding:6px 9px;font-weight:800}.prompt-label,.answer-label{text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:10px}.prompt{font-size:30px;line-height:1.35;font-weight:760;margin:14px 0 24px}.prompt.ru-font{font-family:"Times New Roman",Times,serif;font-weight:400}.prompt.de-font{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif}.prompt-model{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:.72em;font-style:italic;font-weight:400;color:var(--muted);white-space:nowrap;margin-left:.3em}.answerbox{border-top:1px solid var(--line);padding-top:22px;margin-top:6px}.answer{font-size:28px;line-height:1.4;font-weight:700}.model{margin-top:12px;color:var(--accent);font-weight:800}.note{margin-top:10px;color:var(--muted);line-height:1.5}.hidden{display:none!important}.card-actions{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}.rate{min-width:130px;border-radius:14px;border:1px solid var(--line);background:var(--panel);padding:11px 13px;text-align:left}.rate b{display:block}.rate small{color:var(--muted)}.rate.again b{color:var(--danger)}.rate.hard b{color:var(--warn)}.rate.good b{color:var(--good)}.rate.easy b{color:var(--easy)}
+.kbd{font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 5px;color:var(--muted)}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.section-title h3{margin:0;font-size:18px}.muted{color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:8px}.row{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:minmax(160px,1fr) minmax(260px,2fr) auto;gap:12px;align-items:center}.row .de{font-weight:750}.row .ru{color:var(--muted);font-size:14px}.pill{font-size:11px;padding:5px 7px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}.due{color:var(--warn)}.known{color:var(--good)}.new{color:var(--accent)}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:12px;padding:10px 12px;outline:none}.field textarea{min-height:190px;resize:vertical;line-height:1.45}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.help{font-size:13px;color:var(--muted);line-height:1.55}.help code{background:var(--bg);border:1px solid var(--line);padding:1px 5px;border-radius:6px;color:var(--text)}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:150px;border-bottom:1px solid var(--line);padding:8px 0}.bar{flex:1;min-width:10px;background:var(--accent);border-radius:6px 6px 0 0;opacity:.75}.barlabel{display:grid;grid-template-columns:repeat(14,1fr);gap:6px;font-size:9px;color:var(--muted);margin-top:5px;text-align:center}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}.toast{position:fixed;right:18px;bottom:18px;background:var(--text);color:var(--bg);padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);font-weight:700;z-index:99;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}
+.search{width:min(360px,100%)}
+.builder{margin-top:20px}.assembled-box{padding:4px 0 18px;margin-bottom:8px;min-height:58px}.assembled-label{display:none}.assembled-sentence{display:flex;flex-wrap:wrap;gap:.32em;align-items:baseline;min-height:38px;font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:30px;line-height:1.35}.built-block{padding:0;font-weight:600;animation:pop .16s ease}.assembled-placeholder{color:var(--muted);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px}.builder-grid{display:grid;grid-template-columns:1fr 1fr;gap:34px}.builder-col{padding:0;transition:.16s;min-width:0}.builder-col.active{opacity:1}.builder-col.inactive{opacity:.34}.builder-col.done{visibility:hidden}.builder-col-title{display:none}.builder-options{display:grid;gap:3px}.builder-option{width:100%;min-height:46px;border:0;background:transparent;color:var(--text);padding:6px 8px;border-radius:8px;font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:23px;font-weight:600;text-align:center;line-height:1.2;transition:.12s}.builder-col.active .builder-option:hover{background:color-mix(in srgb,var(--accent) 8%,transparent);transform:translateY(-1px)}.builder-col.inactive .builder-option,.builder-col.done .builder-option{cursor:default}.builder-option.wrong{color:var(--danger);background:color-mix(in srgb,var(--danger) 7%,transparent);animation:shake .24s ease}.builder-option.correct{color:var(--good);background:color-mix(in srgb,var(--good) 6%,transparent)}.builder-empty{display:none}.builder-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:8px;min-height:18px}.builder-hint:empty{display:none}.builder-hint.success{color:var(--good);font-weight:700}.builder-hint.error{color:var(--danger)}
+.de,.answer,#answerText{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif}
+@keyframes shake{0%,100%{transform:translateX(0)}30%{transform:translateX(-4px)}70%{transform:translateX(4px)}}@keyframes pop{from{transform:scale(.92);opacity:.35}to{transform:scale(1);opacity:1}}
+
+/* ─────────────────────────────────────────────────────────────
+   Seventeenth-century book-printing skin
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#d8c49b;
+  --panel:#f1e5c8;
+  --text:#2d251b;
+  --muted:#76654d;
+  --line:#aa9164;
+  --accent:#6e2f2a;
+  --accent2:#54221f;
+  --danger:#8d2d26;
+  --warn:#8a5a18;
+  --good:#425c35;
+  --easy:#55426d;
+  --shadow:0 8px 22px rgba(61,42,22,.12);
+  --radius:0px;
+}
+[data-theme="dark"]{
+  --bg:#211b15;
+  --panel:#30271e;
+  --text:#eadcbd;
+  --muted:#bba98a;
+  --line:#6f5b3c;
+  --accent:#d2a26f;
+  --accent2:#e2bd8c;
+  --danger:#dc8f7f;
+  --warn:#d9ad6f;
+  --good:#9eb487;
+  --easy:#b9a4c9;
+  --shadow:0 8px 24px rgba(0,0,0,.28);
+}
+html,body{
+  font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(circle at 16% 18%,rgba(255,255,255,.18) 0 1px,transparent 1.5px),
+    radial-gradient(circle at 74% 42%,rgba(67,46,22,.045) 0 1px,transparent 1.6px),
+    linear-gradient(90deg,rgba(92,65,34,.035),transparent 8%,transparent 92%,rgba(92,65,34,.035));
+  background-size:19px 23px,31px 29px,100% 100%;
+  color:var(--text);
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
+  box-shadow:inset 0 0 90px rgba(67,43,17,.18);
+  mix-blend-mode:multiply;
+}
+.app{max-width:1110px;padding:28px 28px 46px}
+.topbar{margin-bottom:10px;padding:7px 0 18px;border-bottom:3px double var(--line);position:relative}
+.topbar:after{content:"❦";position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);padding:0 10px;background:var(--bg);color:var(--accent);font-size:18px;line-height:1}
+.brand{gap:14px}.logo{width:46px;height:54px;border:1px solid var(--text);border-radius:0;background:transparent;color:var(--text);box-shadow:none;font-family:"AdobeGaramondLocal",Garamond,serif;font-size:33px;font-weight:400;line-height:1;position:relative}
+.logo:before,.logo:after{content:"";position:absolute;inset:3px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);pointer-events:none}.logo:after{inset:6px 3px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.brand h1{font-family:"AdobeGaramondLocal",Garamond,serif;font-size:28px;font-weight:600;letter-spacing:.02em;font-variant:small-caps}.brand small{font-family:"Times New Roman",Times,serif;font-size:12px;letter-spacing:.04em}
+.iconbtn{border:0;border-radius:0;background:transparent;padding:7px 9px;font-family:"Times New Roman",Times,serif;color:var(--text)}
+.nav{justify-content:center;gap:2px;margin:18px 0 24px;border-bottom:1px solid var(--line);padding-bottom:7px}.nav button{border-radius:0;padding:7px 13px;font-family:"Times New Roman",Times,serif;font-size:14px;font-weight:400;color:var(--muted);letter-spacing:.025em}.nav button.active{background:transparent;color:var(--text);box-shadow:none;font-style:italic;border-bottom:1px solid var(--text)}
+.panel{background:color-mix(in srgb,var(--panel) 93%,transparent);border:1px solid var(--line);border-radius:0;box-shadow:0 4px 16px rgba(66,46,24,.07);padding:24px;position:relative}.panel:before{content:"";position:absolute;inset:4px;border:1px solid color-mix(in srgb,var(--line) 50%,transparent);pointer-events:none}.hero:after{content:"❧";position:absolute;right:18px;top:11px;color:color-mix(in srgb,var(--line) 72%,transparent);font-size:26px}
+.hero h2{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:38px;font-weight:500;letter-spacing:-.01em}.hero p,.help,.row,.field,.stat,.section-title,.muted{font-family:"Times New Roman",Times,serif}
+.stats{gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px 0}.stat{border:0;border-right:1px solid var(--line);border-radius:0;padding:9px 15px}.stat:last-child{border-right:0}.stat b{font-family:"AdobeGaramondLocal",Garamond,serif;font-weight:500}
+.primary,.secondary,.rate{border-radius:0;font-family:"Times New Roman",Times,serif;box-shadow:none}.primary{background:var(--accent);padding:10px 17px;font-weight:400;letter-spacing:.03em}.secondary{background:transparent;border:1px solid var(--line);font-weight:400}.primary:hover{background:var(--accent2)}
+.row{border:0;border-bottom:1px solid color-mix(in srgb,var(--line) 65%,transparent);border-radius:0;padding:10px 4px}.row:last-child{border-bottom:0}.pill{border-radius:0;border:0;border-bottom:1px solid currentColor;padding:2px 4px}
+.study-wrap{max-width:860px}.study-head{font-family:"Times New Roman",Times,serif;font-style:italic}.progress{height:2px;border-radius:0;background:color-mix(in srgb,var(--line) 65%,transparent)}.progress>div{background:var(--accent)}
+.card{background:color-mix(in srgb,var(--panel) 96%,transparent);border:1px solid var(--line);border-radius:0;box-shadow:0 6px 22px rgba(69,48,25,.10);min-height:440px;padding:38px 44px 34px;position:relative}.card:before{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--line) 55%,transparent);pointer-events:none}.card:after{content:"❦";position:absolute;left:50%;top:8px;transform:translateX(-50%);color:var(--accent);font-size:16px;background:var(--panel);padding:0 8px}
+.tag{border-radius:0;background:transparent;color:var(--muted);padding:0 0 6px;border-bottom:1px solid var(--line);font-family:"Times New Roman",Times,serif;font-weight:400;font-style:italic}.prompt-label,.answer-label{text-transform:none;letter-spacing:.06em;font-family:"Times New Roman",Times,serif;font-size:11px;font-weight:400;font-style:italic}.prompt{font-weight:400}.prompt.ru-font{font-family:"Times New Roman",Times,serif}.prompt.de-font,.prompt-model,.answer,.model,.de,#answerText{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif}.prompt-model{color:var(--muted)}.answerbox{border-top:3px double var(--line)}.model{color:var(--accent);font-weight:500;font-style:italic}.note{font-family:"Times New Roman",Times,serif}.kbd{border-radius:0;border:1px solid var(--line);background:transparent}
+.builder{margin-top:18px}.assembled-box{padding:8px 0 21px;margin-bottom:12px;border-bottom:1px solid color-mix(in srgb,var(--line) 72%,transparent)}.assembled-sentence{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:32px;justify-content:center;letter-spacing:.005em}.built-block{font-weight:400}.assembled-placeholder{font-family:"Times New Roman",Times,serif;font-style:italic}.builder-grid{gap:70px;position:relative;padding:12px 0 8px}.builder-grid:before{content:"";position:absolute;left:50%;top:7%;bottom:7%;width:1px;background:linear-gradient(transparent,var(--line) 17%,var(--line) 83%,transparent)}
+.builder-col.inactive{opacity:.30}.builder-options{gap:1px}.builder-option{min-height:44px;border:0!important;border-radius:0!important;background:transparent!important;padding:5px 8px;font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:25px;font-weight:400;text-align:center;line-height:1.18;transition:.12s;text-transform:lowercase;letter-spacing:.01em}.builder-col.active .builder-option:hover{background:transparent!important;color:var(--accent);transform:none;font-style:italic}.builder-option:before,.builder-option:after{content:"·";opacity:0;color:var(--line);padding:0 7px}.builder-col.active .builder-option:hover:before,.builder-col.active .builder-option:hover:after{opacity:1}.builder-option.wrong{color:var(--danger);background:transparent!important;text-decoration:line-through;text-decoration-thickness:1px}.builder-option.correct{color:var(--good);background:transparent!important;font-style:italic}.builder-hint{font-family:"Times New Roman",Times,serif;font-style:italic}.builder-hint.success{font-weight:400}
+.rate{background:transparent;border:1px solid var(--line);min-width:125px;padding:9px 12px}.rate b{font-family:"Times New Roman",Times,serif;font-weight:400}.rate small{font-family:"AdobeGaramondLocal",Garamond,serif}
+.field input,.field select,.field textarea{border-radius:0;border:1px solid var(--line);background:rgba(255,255,255,.13);font-family:"Times New Roman",Times,serif}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--text);outline:1px solid var(--line);outline-offset:2px}.help code{border-radius:0;background:transparent;border:0;border-bottom:1px dotted var(--line)}
+.bar{border-radius:0;background:var(--accent)}.toast{border-radius:0;background:var(--text);font-family:"Times New Roman",Times,serif;box-shadow:0 7px 20px rgba(55,36,17,.18)}
+.section-title h3{font-family:"AdobeGaramondLocal",Garamond,"Times New Roman",serif;font-size:21px;font-weight:500;font-variant:small-caps;letter-spacing:.035em}.empty{font-family:"Times New Roman",Times,serif}
+@media(max-width:850px){.hero,.side,.half{grid-column:1/-1}.stats{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr}.hero h2{font-size:28px}.prompt,.answer{font-size:24px}.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}}
+@media(max-width:520px){.app{padding:12px}.card{min-height:390px;padding:22px 18px}.topbar{align-items:flex-start}.brand small{display:none}.rate{min-width:calc(50% - 6px)}.stats{grid-template-columns:1fr 1fr}}
+
+
+/* ─────────────────────────────────────────────────────────────
+   Quiet abstract edition — smoother palette, no brown cast
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#14594e;
+  --panel:#f3efe5;
+  --text:#24352f;
+  --muted:#5b6f68;
+  --line:#b8c9c2;
+  --accent:#2e6b60;
+  --accent2:#23534b;
+  --shadow:0 18px 42px rgba(4,38,31,.16);
+}
+[data-theme="dark"]{
+  --bg:#123d34;
+  --panel:#22322d;
+  --text:#edf3ee;
+  --muted:#b6c9c1;
+  --line:#5f7a72;
+  --accent:#9dd2c2;
+  --accent2:#c4e4d9;
+  --shadow:0 18px 46px rgba(0,0,0,.26);
+}
+html,body{
+  background-color:#14594e;
+  background-image:
+    radial-gradient(circle at 14% 10%, rgba(221,236,228,.16) 0%, rgba(221,236,228,.09) 12%, transparent 36%),
+    radial-gradient(circle at 78% 18%, rgba(119,196,192,.14) 0%, rgba(119,196,192,.08) 13%, transparent 38%),
+    radial-gradient(circle at 62% 76%, rgba(168,214,231,.12) 0%, rgba(168,214,231,.06) 14%, transparent 40%),
+    radial-gradient(circle at 28% 84%, rgba(207,227,215,.10) 0%, rgba(207,227,215,.05) 12%, transparent 34%),
+    linear-gradient(135deg, #0f5146 0%, #156256 28%, #19685d 56%, #15594f 78%, #104d43 100%);
+  background-attachment:fixed;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:-10%;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(239,246,240,.10), transparent 24%),
+    radial-gradient(circle at 70% 62%, rgba(170,219,230,.08), transparent 28%),
+    radial-gradient(circle at 86% 28%, rgba(123,197,188,.07), transparent 22%);
+  filter:blur(42px);
+  transform:scale(1.03);
+}
+.app{position:relative;z-index:1}
+
+/* Keep the old-book feeling in type and paper, not in decorative rules. */
+.topbar{border:0;padding-bottom:8px;margin-bottom:8px}
+.topbar:after{display:none}
+.logo{border:0;background:rgba(243,239,229,.88);color:#315d53;box-shadow:0 8px 22px rgba(5,45,36,.12);width:44px;height:50px}
+.logo:before,.logo:after{display:none}
+.brand h1,.brand small{color:#eef6f0;text-shadow:0 1px 2px rgba(0,0,0,.18)}
+.iconbtn{color:#eef6f0;background:rgba(20,68,57,.18);border:0}
+.nav{border:0;padding-bottom:0;margin:12px 0 20px;gap:8px}
+.nav button{color:rgba(241,248,243,.76);background:rgba(7,63,52,.12)}
+.nav button.active{color:#ffffff;background:rgba(243,239,229,.16);border:0;font-style:italic}
+
+.panel,.card{
+  background:rgba(243,239,229,.92);
+  border:0;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(4px);
+}
+[data-theme="dark"] .panel,[data-theme="dark"] .card{background:rgba(34,50,45,.92)}
+.panel:before,.hero:after,.card:before,.card:after{display:none}
+.panel{padding:24px}
+.card{padding:38px 44px 34px}
+
+.stats{border:0;padding:8px 0;gap:14px}
+.stat{border:0;background:rgba(255,255,255,.24);padding:12px 14px}
+[data-theme="dark"] .stat{background:rgba(255,255,255,.06)}
+.row{border:0;background:rgba(255,255,255,.16);padding:11px 12px;margin-bottom:5px}
+[data-theme="dark"] .row{background:rgba(255,255,255,.05)}
+.pill{border:0;background:rgba(255,255,255,.18);padding:3px 7px}
+.progress{background:rgba(236,244,239,.26);height:3px}
+
+.tag{border:0;padding:0 0 5px}
+.answerbox{border:0;padding-top:18px}
+.assembled-box{border:0;padding-bottom:16px;margin-bottom:7px}
+.builder-grid:before{display:none}
+.builder-grid{gap:82px;padding-top:6px}
+.builder-option:before,.builder-option:after{display:none}
+.builder-col.active .builder-option:hover{color:var(--accent);font-style:italic;text-shadow:none}
+
+.prompt-model{color:var(--muted)}
+.rate{border:0;background:rgba(255,255,255,.22);box-shadow:none}
+.rate:hover{background:rgba(255,255,255,.34)}
+[data-theme="dark"] .rate{background:rgba(255,255,255,.08)}
+[data-theme="dark"] .rate:hover{background:rgba(255,255,255,.12)}
+.secondary{border:0;background:rgba(255,255,255,.20)}
+.secondary:hover{background:rgba(255,255,255,.30)}
+[data-theme="dark"] .secondary{background:rgba(255,255,255,.08)}
+[data-theme="dark"] .secondary:hover{background:rgba(255,255,255,.13)}
+.kbd{border:0;background:rgba(255,255,255,.22);padding:2px 5px}
+
+/* Inputs still need a subtle edge for usability; everything else stays line-free. */
+.field input,.field select,.field textarea,.search{
+  border:0;
+  outline:0;
+  background:rgba(255,255,255,.24);
+  box-shadow:inset 0 0 0 1px rgba(36,53,47,.10);
+}
+[data-theme="dark"] .field input,[data-theme="dark"] .field select,[data-theme="dark"] .field textarea,[data-theme="dark"] .search{background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
+.field input:focus,.field textarea:focus,.field select:focus,.search:focus{
+  border:0;
+  outline:0;
+  box-shadow:inset 0 0 0 1px rgba(46,107,96,.42),0 0 0 3px rgba(46,107,96,.10);
+}
+.bar-chart{border:0}
+.help code{border:0;background:rgba(255,255,255,.14)}
+
+@media(max-width:700px){
+  html,body{background-size:180% 130%,180% 135%,170% 130%,190% 145%,180% 150%,100% 100%}
+  .builder-grid{gap:28px}
+}
+
+
+
+/* ─────────────────────────────────────────────────────────────
+   Final polish — smooth painterly field + noun capitalization
+   ───────────────────────────────────────────────────────────── */
+html,body{
+  background-color:#145b4c;
+  background-image:
+    radial-gradient(ellipse 110% 90% at 14% 14%, rgba(213,228,216,.14) 0%, rgba(213,228,216,.08) 34%, transparent 72%),
+    radial-gradient(ellipse 95% 88% at 82% 20%, rgba(110,168,156,.12) 0%, rgba(110,168,156,.07) 36%, transparent 74%),
+    radial-gradient(ellipse 100% 92% at 66% 80%, rgba(85,153,170,.10) 0%, rgba(85,153,170,.06) 38%, transparent 76%),
+    linear-gradient(135deg,#165f4f 0%,#145949 35%,#125348 68%,#134e48 100%);
+  background-size:100% 100%;
+  background-attachment:fixed;
+}
+body:before{
+  inset:-18%;
+  background:
+    radial-gradient(ellipse 42% 28% at 24% 24%, rgba(233,242,236,.08), transparent 74%),
+    radial-gradient(ellipse 38% 34% at 74% 68%, rgba(126,185,194,.08), transparent 76%);
+  filter:blur(64px) saturate(.9);
+  transform:scale(1.08);
+  mix-blend-mode:soft-light;
+  opacity:.88;
+}
+.builder-option{
+  text-transform:none!important;
+}
+@media(max-width:700px){
+  html,body{background-size:100% 100%}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="logo">R</div><div><h1>Rektion</h1><small>интервальные повторения · Deutsch</small></div></div>
+    <div class="top-actions"><button id="themeBtn" class="iconbtn" title="Тема">◐</button></div>
+  </header>
+  <nav class="nav" id="nav">
+    <button data-view="home" class="active">Сегодня</button>
+    <button data-view="study">Учить</button>
+    <button data-view="cards">Карточки</button>
+    <button data-view="add">Добавить</button>
+    <button data-view="stats">Статистика</button>
+    <button data-view="settings">Настройки</button>
+  </nav>
+
+  <main>
+    <section id="view-home" class="view">
+      <div class="grid">
+        <div class="panel hero">
+          <span class="tag">● Немецкое управление</span>
+          <h2>Не узнавай конструкцию. Вспоминай её сам.</h2>
+          <p>Собирай немецкое предложение по частям. Два столбца чередуются: в каждом четыре варианта, но только один продолжает предложение правильно. После сборки оцени, насколько легко оно далось.</p>
+          <div class="controls"><button class="primary" id="startBtn">Начать повторение</button><button class="secondary" data-jump="add">Добавить карточки</button></div>
+          <div class="stats">
+            <div class="stat"><b id="sDue">0</b><span>к повторению</span></div>
+            <div class="stat"><b id="sNew">0</b><span>новых сегодня</span></div>
+            <div class="stat"><b id="sKnown">0</b><span>закреплено</span></div>
+            <div class="stat"><b id="sTotal">0</b><span>всего карточек</span></div>
+          </div>
+        </div>
+        <div class="panel side">
+          <div class="section-title"><h3>Сегодня</h3><span class="muted" id="todayLabel"></span></div>
+          <div class="list">
+            <div class="row" style="grid-template-columns:1fr auto"><div><b>Повторы</b><div class="muted" style="font-size:13px">сначала просроченные</div></div><span class="pill due" id="todayDue">0</span></div>
+            <div class="row" style="grid-template-columns:1fr auto"><div><b>Новые</b><div class="muted" style="font-size:13px">лимит на день</div></div><span class="pill new" id="todayNew">0</span></div>
+            <div class="row" style="grid-template-columns:1fr auto"><div><b>Серия</b><div class="muted" style="font-size:13px">дней с ответами</div></div><span class="pill known" id="streak">0 дн.</span></div>
+          </div>
+        </div>
+        <div class="panel full">
+          <div class="section-title"><h3>Как отвечать</h3></div>
+          <div class="help">В режиме <b>«Конструктор»</b> выбирай правильный блок сначала в левом, затем в правом столбце — и так по очереди. После полной сборки: <b>1</b> — забыл · <b>2</b> — трудно · <b>3</b> — знаю · <b>4</b> — легко · <b>Z</b> — отменить последний ответ. Прогресс сохраняется автоматически.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-study" class="view hidden">
+      <div class="study-wrap">
+        <div class="study-head"><span id="queueInfo">0 карточек</span><span id="directionInfo">Русский → немецкий</span></div>
+        <div class="progress"><div id="studyProgress"></div></div>
+        <div id="studyCard" class="card">
+          <div>
+            <div class="tag" id="cardTag">новая</div>
+            <div class="prompt-label" id="promptLabel">Переведи на немецкий</div>
+            <div class="prompt" id="promptText">—</div>
+            <button class="secondary" id="speakPromptBtn">Озвучить</button>
+            <div id="builderBox" class="builder hidden">
+              <div class="assembled-box">
+                <div class="assembled-sentence" id="assembledSentence"></div>
+              </div>
+              <div class="builder-grid">
+                <div class="builder-col" id="builderCol0"><div class="builder-options" id="builderOptions0"></div></div>
+                <div class="builder-col" id="builderCol1"><div class="builder-options" id="builderOptions1"></div></div>
+              </div>
+              <div class="builder-hint" id="builderHint"></div>
+            </div>
+            <div class="answerbox hidden" id="answerBox">
+              <div class="answer-label">Ответ</div>
+              <div class="answer" id="answerText">—</div>
+              <div class="model" id="modelText"></div>
+              <div class="note" id="noteText"></div>
+              <div style="margin-top:12px"><button class="secondary" id="speakAnswerBtn">Немецкая озвучка</button></div>
+            </div>
+          </div>
+          <div>
+            <div class="card-actions" id="revealActions"><button class="primary" id="revealBtn">Показать ответ <span class="kbd">Space</span></button></div>
+            <div class="card-actions hidden" id="rateActions">
+              <button class="rate again" data-grade="again"><b>Забыл · 1</b><small id="againInt">10 мин</small></button>
+              <button class="rate hard" data-grade="hard"><b>Трудно · 2</b><small id="hardInt">1 день</small></button>
+              <button class="rate good" data-grade="good"><b>Знаю · 3</b><small id="goodInt">2 дня</small></button>
+              <button class="rate easy" data-grade="easy"><b>Легко · 4</b><small id="easyInt">4 дня</small></button>
+            </div>
+          </div>
+        </div>
+        <div id="studyDone" class="panel empty hidden"><h3>На сегодня всё</h3><p>Очередь закончилась. Расписание следующих повторений уже сохранено.</p><button class="secondary" id="extraBtn">Ещё круг без изменения расписания</button></div>
+      </div>
+    </section>
+
+    <section id="view-cards" class="view hidden">
+      <div class="panel">
+        <div class="section-title"><h3>Карточки</h3><div class="controls"><input id="searchInput" class="search" placeholder="Поиск по глаголу, предложению или тегу" /></div></div>
+        <div class="help" style="margin-bottom:12px">Статус «закреплено» — интервал 21 день и больше. Клик по карточке открывает редактирование.</div>
+        <div id="cardsList" class="list"></div>
+      </div>
+    </section>
+
+    <section id="view-add" class="view hidden">
+      <div class="grid">
+        <div class="panel half">
+          <div class="section-title"><h3>Одна карточка</h3></div>
+          <div class="formgrid">
+            <div class="field span2"><label>Русское предложение</label><textarea id="fRu" style="min-height:90px" placeholder="Я подаю заявление на визу."></textarea></div>
+            <div class="field span2"><label>Немецкое предложение</label><textarea id="fDe" style="min-height:90px" placeholder="Ich beantrage ein Visum."></textarea></div>
+            <div class="field"><label>Глагол / модель</label><input id="fModel" placeholder="beantragen + A" /></div>
+            <div class="field"><label>Теги</label><input id="fTags" placeholder="университет, Verwaltung" /></div>
+            <div class="field span2"><label>Комментарий / подсказка</label><input id="fNote" placeholder="официально запросить что-либо" /></div>
+          </div>
+          <div class="controls" style="margin-top:14px"><button class="primary" id="addOneBtn">Добавить</button><button class="secondary hidden" id="cancelEditBtn">Отменить редактирование</button></div>
+        </div>
+        <div class="panel half">
+          <div class="section-title"><h3>Импорт пачкой</h3></div>
+          <div class="help" style="margin-bottom:10px"><b>Excel:</b> первая строка — заголовки <code>Русский</code>, <code>Deutsch</code>, <code>Модель</code>, <code>Теги</code>, <code>Комментарий</code>. Обязательны только первые две колонки. Поддерживается обычный файл <code>.xlsx</code>.</div>
+          <div class="controls" style="margin-bottom:10px">
+            <label class="primary" style="display:inline-flex;align-items:center">Импортировать Excel<input id="xlsxFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden /></label>
+            <a class="secondary" href="rektion-import-template.xlsx" download style="text-decoration:none;display:inline-flex;align-items:center">Скачать образец Excel</a>
+          </div>
+          <div id="xlsxStatus" class="help" style="min-height:18px;margin-bottom:16px"></div>
+          <div class="help" style="margin-bottom:10px"><b>Или вставь текст:</b> одна карточка на строку. Формат: <code>русский[TAB]немецкий[TAB]модель[TAB]теги[TAB]комментарий</code>. Можно также использовать <code>|</code>.</div>
+          <div class="field"><textarea id="bulkInput" placeholder="Я подаю заявление на визу.	Ich beantrage ein Visum.	beantragen + A	Verwaltung
+Я подаю заявку на учебное место.	Ich bewerbe mich um einen Studienplatz.	sich bewerben um + A	Studium"></textarea></div>
+          <div class="controls" style="margin-top:12px"><button class="primary" id="bulkBtn">Импортировать текст</button><button class="secondary" id="downloadTemplateBtn">Скачать шаблон TSV</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-stats" class="view hidden">
+      <div class="grid">
+        <div class="panel full"><div class="section-title"><h3>Последние 14 дней</h3><span class="muted" id="reviewTotal">0 ответов</span></div><div class="bar-chart" id="barChart"></div><div class="barlabel" id="barLabels"></div></div>
+        <div class="panel half"><div class="section-title"><h3>Состояние колоды</h3></div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b id="stNew">0</b><span>не начато</span></div><div class="stat"><b id="stLearning">0</b><span>в обучении</span></div><div class="stat"><b id="stMature">0</b><span>закреплено</span></div><div class="stat"><b id="stLapses">0</b><span>забываний</span></div></div></div>
+        <div class="panel half"><div class="section-title"><h3>Ответы</h3></div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b id="stAgain">0</b><span>забыл</span></div><div class="stat"><b id="stHard">0</b><span>трудно</span></div><div class="stat"><b id="stGood">0</b><span>знаю</span></div><div class="stat"><b id="stEasy">0</b><span>легко</span></div></div></div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view hidden">
+      <div class="grid">
+        <div class="panel half">
+          <div class="section-title"><h3>Тренировка</h3></div>
+          <div class="formgrid">
+            <div class="field"><label>Новых карточек в день</label><input id="setNewLimit" type="number" min="0" max="200" /></div>
+            <div class="field"><label>Максимум повторений (0 = без лимита)</label><input id="setReviewLimit" type="number" min="0" max="1000" /></div>
+            <div class="field span2"><label>Режим занятия</label><select id="setStudyMode"><option value="builder">Конструктор слов: 2 × 4 варианта</option><option value="flip">Обычная карточка с показом ответа</option></select></div>
+            <div class="field span2"><label>Направление обычных карточек</label><select id="setDirection"><option value="ru-de">Русский → немецкий (активное воспроизведение)</option><option value="de-ru">Немецкий → русский (понимание)</option><option value="mixed">Смешанное</option></select></div>
+            <div class="field span2"><label><input id="setAutoSpeak" type="checkbox" /> Автоматически озвучивать немецкое предложение после сборки / открытия ответа</label></div>
+          </div>
+          <div class="controls" style="margin-top:14px"><button class="primary" id="saveSettingsBtn">Сохранить</button></div>
+        </div>
+        <div class="panel half">
+          <div class="section-title"><h3>Данные</h3></div>
+          <p class="help">Все данные хранятся только в этом браузере через localStorage. Сделай резервную копию, если собираешься чистить браузер или переносить тренажёр на другой компьютер.</p>
+          <div class="controls"><button class="secondary" id="exportBtn">Экспорт JSON</button><label class="secondary" style="display:inline-flex;align-items:center">Импорт JSON<input id="importFile" type="file" accept="application/json" hidden /></label><button class="secondary" id="resetScheduleBtn">Сбросить только расписание</button><button class="secondary danger" id="resetAllBtn">Удалить всё</button></div>
+        </div>
+        <div class="panel full">
+          <div class="section-title"><h3>Алгоритм</h3></div>
+          <p class="help">Используется прозрачная схема, близкая по духу к SM-2: «забыл» возвращает карточку через 10 минут и уменьшает лёгкость; «трудно» даёт короткий интервал; «знаю» умножает текущий интервал примерно на коэффициент лёгкости; «легко» — сильнее. После каждого ответа расписание хранится локально. Это не копия алгоритма исходного сайта и не FSRS.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script src="jszip.min.js"></script>
+<script>
+(() => {
+  const DAY = 86400000, MIN = 60000;
+  const KEY = 'rektion_trainer_v1';
+  const now = () => Date.now();
+  const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
+  const todayKey = (t=Date.now()) => { const d=new Date(t); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` };
+  const starter = [
+    ['Новая учебная программа во многом похожа на старую.','Der neue Studiengang ähnelt dem alten Programm in vielen Punkten.','ähneln + D','Dativ,Studium','Кому/чему подобен? Dativ.'],
+    ['Эта контрольная похожа на экзамен прошлого семестра?','Ähnelt diese Klausur der Prüfung vom letzten Semester?','ähneln + D','Dativ,Prüfung',''],
+    ['Преподаватель отвечает студентке после лекции.','Der Dozent antwortet der Studentin nach der Vorlesung.','antworten + D','Dativ,Studium','Адресат ответа стоит в Dativ.'],
+    ['Профессор всегда так подробно отвечает студентам?','Antwortet der Professor den Studierenden immer so ausführlich?','antworten + D','Dativ,Studium',''],
+    ['Студенты внимательно следят за докладом профессора.','Die Studierenden folgen dem Vortrag des Professors aufmerksam.','folgen + D','Dativ,Vorlesung','folgen требует Dativ.'],
+    ['Ты хорошо понимаешь ход мысли преподавателя на этой лекции?','Kannst du dem Dozenten in dieser Vorlesung gut folgen?','folgen + D','Dativ,Vorlesung','В значении «следить за мыслью» тоже Dativ.'],
+    ['Современный кампус очень нравится новым студентам.','Der moderne Campus gefällt den neuen Studierenden sehr.','gefallen + D','Dativ,Studium','Тот, кому нравится, — Dativ.'],
+    ['Тебе нравится лекция по языкознанию?','Gefällt dir die Vorlesung über Sprachwissenschaft?','gefallen + D','Dativ,Vorlesung',''],
+    ['Я подаю документы на учебное место в университете.','Ich bewerbe mich um einen Studienplatz an der Universität.','sich bewerben um + A','Präposition,Studium','Концепт: «выберите меня» — кандидат.'],
+    ['Она подаёт заявку на стипендию DAAD.','Sie bewirbt sich um ein DAAD-Stipendium.','sich bewerben um + A','Präposition,Stipendium','Конкурс / отбор кандидата.'],
+    ['Я подаю заявление на визу.','Ich beantrage ein Visum.','beantragen + A','Akkusativ,Verwaltung','Концепт: «дайте мне это» — официальный запрос.'],
+    ['Студент подаёт заявление на продление вида на жительство.','Der Student beantragt die Verlängerung seiner Aufenthaltserlaubnis.','beantragen + A','Akkusativ,Verwaltung',''],
+    ['Успех на экзамене зависит от хорошей подготовки.','Der Erfolg in der Prüfung hängt von einer guten Vorbereitung ab.','abhängen von + D','Präposition,Prüfung',''],
+    ['На устном экзамене всё зависит от ясной структуры ответа.','In der mündlichen Prüfung hängt alles von einer klaren Struktur der Antwort ab.','es hängt von + D ab','Präposition,Prüfung',''],
+    ['На семинаре нужно обращать внимание на аргументацию.','Im Seminar muss man auf die Argumentation achten.','achten auf + A','Präposition,Seminar',''],
+    ['Мы начинаем с повторения основных терминов.','Wir fangen mit der Wiederholung der wichtigsten Begriffe an.','anfangen mit + D','Präposition,Studium',''],
+    ['Иностранным студентам приходится приспосабливаться к новой системе обучения.','Internationale Studierende müssen sich an das neue Studiensystem anpassen.','sich anpassen an + A','Präposition,Studium',''],
+    ['Студент злится из-за высокой семестровой платы.','Der Student ärgert sich über den hohen Semesterbeitrag.','sich ärgern über + A','Präposition,Studium',''],
+    ['После экзамена мы прекращаем заниматься этой темой.','Nach der Prüfung hören wir mit diesem Thema auf.','aufhören mit + D','Präposition,Prüfung',''],
+    ['Я благодарю профессора за подробную консультацию.','Ich bedanke mich beim Professor für die ausführliche Beratung.','sich bedanken bei + D / für + A','Präposition,Studium','bei = у кого/перед кем; für = за что.'],
+    ['Студент жалуется декану на организацию экзамена.','Der Student beklagt sich beim Dekan über die Organisation der Prüfung.','sich beklagen bei + D / über + A','Präposition,Prüfung',''],
+    ['Она старается получить место в магистратуре.','Sie bemüht sich um einen Platz im Masterstudiengang.','sich bemühen um + A','Präposition,Studium',''],
+    ['Я сейчас занимаюсь подготовкой к TestDaF.','Ich beschäftige mich gerade mit der Vorbereitung auf den TestDaF.','sich beschäftigen mit + D','Präposition,Prüfung',''],
+    ['Студенты жалуются в экзаменационную комиссию на результат.','Die Studierenden beschweren sich beim Prüfungsausschuss über das Ergebnis.','sich beschweren bei + D / über + A','Präposition,Prüfung',''],
+    ['Я прошу преподавателя о дополнительной консультации.','Ich bitte den Dozenten um eine zusätzliche Sprechstunde.','jdn. bitten um + A','Präposition,Studium',''],
+    ['Я благодарю преподавателя за помощь с заявлением.','Ich danke dem Dozenten für die Hilfe bei der Bewerbung.','jdm. danken für + A','Präposition,Studium',''],
+    ['Перед экзаменом я часто думаю о возможных вопросах.','Vor der Prüfung denke ich oft an mögliche Fragen.','denken an + A','Präposition,Prüfung',''],
+    ['Студент извиняется перед преподавателем за опоздание.','Der Student entschuldigt sich beim Dozenten für die Verspätung.','sich entschuldigen bei + D / für + A','Präposition,Studium',''],
+    ['Я хорошо помню свою первую лекцию в университете.','Ich erinnere mich gut an meine erste Vorlesung an der Universität.','sich erinnern an + A','Präposition,Studium',''],
+    ['Я узнаю в секретариате о сроке подачи документов.','Ich erkundige mich im Sekretariat nach der Bewerbungsfrist.','sich erkundigen bei + D / nach + D','Präposition,Bewerbung',''],
+    ['Студент спрашивает преподавателя о результатах экзамена.','Der Student fragt den Dozenten nach den Prüfungsergebnissen.','jdn. fragen nach + D','Präposition,Prüfung',''],
+    ['Я с нетерпением жду начала нового семестра.','Ich freue mich auf den Beginn des neuen Semesters.','sich freuen auf + A','Präposition,Studium','auf = будущее событие.'],
+    ['Я рад результату экзамена.','Ich freue mich über das Prüfungsergebnis.','sich freuen über + A','Präposition,Prüfung','über = уже случившееся / имеющееся.'],
+    ['Многие студенты боятся устного экзамена.','Viele Studierende fürchten sich vor der mündlichen Prüfung.','sich fürchten vor + D','Präposition,Prüfung',''],
+    ['Этот модуль относится к обязательной части программы.','Dieses Modul gehört zum Pflichtbereich des Studiengangs.','gehören zu + D','Präposition,Studium',''],
+    ['На консультации речь идёт о теме дипломной работы.','In der Sprechstunde geht es um das Thema der Abschlussarbeit.','es geht um + A','Präposition,Studium',''],
+    ['После нескольких недель студент привык к академическому письму.','Nach einigen Wochen hat sich der Student an das akademische Schreiben gewöhnt.','sich gewöhnen an + A','Präposition,Studium',''],
+    ['Она верит в свои шансы получить стипендию.','Sie glaubt an ihre Chancen auf ein Stipendium.','glauben an + A','Präposition,Stipendium',''],
+    ['Я считаю этот курс очень полезным для подготовки к экзамену.','Ich halte diesen Kurs für sehr nützlich für die Prüfungsvorbereitung.','jdn./etw. halten für + A','Präposition,Studium',''],
+    ['Что ты думаешь об этой магистерской программе?','Was hältst du von diesem Masterstudiengang?','etwas halten von + D','Präposition,Studium',''],
+    ['Речь идёт об обязательном языковом сертификате.','Es handelt sich um ein obligatorisches Sprachzertifikat.','es handelt sich um + A','Präposition,Bewerbung',''],
+    ['Я надеюсь на положительное решение университета.','Ich hoffe auf eine positive Entscheidung der Universität.','hoffen auf + A','Präposition,Bewerbung',''],
+    ['Он интересуется египтологией и древними языками.','Er interessiert sich für Ägyptologie und alte Sprachen.','sich interessieren für + A','Präposition,Studium',''],
+    ['Во время подготовки я концентрируюсь на слабых местах.','Bei der Vorbereitung konzentriere ich mich auf meine Schwächen.','sich konzentrieren auf + A','Präposition,Prüfung',''],
+    ['Я сам занимаюсь документами для поступления.','Ich kümmere mich selbst um die Bewerbungsunterlagen.','sich kümmern um + A','Präposition,Bewerbung',''],
+    ['Студент страдает от сильного стресса перед экзаменом.','Der Student leidet unter starkem Stress vor der Prüfung.','leiden unter + D','Präposition,Prüfung',''],
+    ['Я долго размышлял о выборе университета.','Ich habe lange über die Wahl der Universität nachgedacht.','nachdenken über + A','Präposition,Studium',''],
+    ['Преподаватель советует студенту пройти дополнительный курс.','Der Dozent rät dem Studenten zu einem zusätzlichen Kurs.','jdm. raten zu + D','Präposition,Studium',''],
+    ['На экзамене я рассчитываю на хорошую подготовку.','In der Prüfung rechne ich mit einer guten Vorbereitung.','rechnen mit + D','Präposition,Prüfung',''],
+    ['После выпуска он стремится к месту в аспирантуре.','Nach dem Abschluss sehnt er sich nach einem Promotionsplatz.','sich sehnen nach + D','Präposition,Studium',''],
+    ['Университет заботится о международных студентах.','Die Universität sorgt für die internationalen Studierenden.','sorgen für + A','Präposition,Studium',''],
+    ['Она переживает за результат вступительного экзамена.','Sie sorgt sich um das Ergebnis der Aufnahmeprüfung.','sich sorgen um + A','Präposition,Prüfung',''],
+    ['После семинара я говорю с преподавателем о своей работе.','Nach dem Seminar spreche ich mit dem Dozenten über meine Arbeit.','sprechen mit + D / über + A','Präposition,Studium',''],
+    ['Многие студенты участвуют в научной конференции.','Viele Studierende nehmen an der wissenschaftlichen Konferenz teil.','teilnehmen an + D','Präposition,Studium',''],
+    ['Эта проблема связана с организацией экзамена.','Dieses Problem hat mit der Organisation der Prüfung zu tun.','etwas zu tun haben mit + D','Präposition,Prüfung',''],
+    ['После занятия мы беседуем с преподавателем о статье.','Nach dem Unterricht unterhalten wir uns mit dem Dozenten über den Artikel.','sich unterhalten mit + D / über + A','Präposition,Studium',''],
+    ['На экзамене я полагаюсь на свою подготовку.','In der Prüfung verlasse ich mich auf meine Vorbereitung.','sich verlassen auf + A','Präposition,Prüfung',''],
+    ['Перед экзаменом студент углубляется в сложную тему.','Vor der Prüfung vertieft sich der Student in ein schwieriges Thema.','sich vertiefen in + A','Präposition,Studium',''],
+    ['Я доверяю этому официальному источнику.','Ich vertraue auf diese offizielle Quelle.','vertrauen auf + A','Präposition,Studium',''],
+    ['В этом семестре я отказываюсь от дополнительного курса.','In diesem Semester verzichte ich auf einen zusätzlichen Kurs.','verzichten auf + A','Präposition,Studium',''],
+    ['Я готовлюсь к устной части TestDaF.','Ich bereite mich auf den mündlichen Teil des TestDaF vor.','sich vorbereiten auf + A','Präposition,Prüfung',''],
+    ['Преподаватель предупреждает студентов о типичных ошибках.','Der Dozent warnt die Studierenden vor typischen Fehlern.','jdn. warnen vor + D','Präposition,Prüfung',''],
+    ['Я жду ответа от университета.','Ich warte auf die Antwort der Universität.','warten auf + A','Präposition,Bewerbung',''],
+    ['Студентка удивляется высокой семестровой плате.','Die Studentin wundert sich über die hohe Semestergebühr.','sich wundern über + A','Präposition,Studium',''],
+    ['Я сомневаюсь в правильности этого решения.','Ich zweifle an der Richtigkeit dieser Entscheidung.','zweifeln an + D','Präposition,Studium','']
+  ];
+
+  function baseState(){
+    return {
+      cards: starter.map(x => ({id:uid(),ru:x[0],de:x[1],model:x[2],tags:x[3],note:x[4],created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]})),
+      settings:{newLimit:15,reviewLimit:0,direction:'ru-de',studyMode:'builder',autoSpeak:true,theme:'light'},
+      logs:[], version:1
+    };
+  }
+  let state;
+  try{ state=JSON.parse(localStorage.getItem(KEY)) || baseState(); }catch{ state=baseState(); }
+  if(!state.settings) state.settings=baseState().settings;
+  if(!state.settings.studyMode) state.settings.studyMode='builder';
+  if(!state.logs) state.logs=[];
+  if(!state.cards) state.cards=[];
+  let currentView='home', queue=[], qIndex=0, revealed=false, lastAction=null, extraMode=false, editId=null;
+  let builderBlocks=[], builderIndex=0, builderTargets=[0,1], builderOptionsCache={}, builderMistakes=0;
+
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+  function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+  function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
+  function fmtDate(ts){return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(new Date(ts))}
+  function fmtInterval(ms){if(ms<DAY) return `${Math.max(1,Math.round(ms/MIN))} мин`; const d=Math.max(1,Math.round(ms/DAY)); return d===1?'1 день':d<5?`${d} дня`:`${d} дней`}
+  function directionFor(card){ if(state.settings.direction==='mixed') return (card.reps%2===0?'ru-de':'de-ru'); return state.settings.direction; }
+  function status(card){ if(card.reps===0) return 'new'; if(card.interval>=21) return 'known'; return card.due<=now()?'due':'learning'; }
+  function newTodayUsed(){ const k=todayKey(); return state.logs.filter(l=>l.date===k && l.wasNew).length; }
+  function dueCards(){ return state.cards.filter(c=>c.reps>0 && c.due<=now()).sort((a,b)=>a.due-b.due); }
+  function newCards(){ const used=newTodayUsed(), left=Math.max(0,state.settings.newLimit-used); return state.cards.filter(c=>c.reps===0).slice(0,left); }
+  function matureCount(){return state.cards.filter(c=>c.interval>=21).length}
+  function renderHome(){
+    const due=dueCards(); const fresh=newCards();
+    $('#sDue').textContent=due.length; $('#sNew').textContent=fresh.length; $('#sKnown').textContent=matureCount(); $('#sTotal').textContent=state.cards.length;
+    $('#todayDue').textContent=due.length; $('#todayNew').textContent=fresh.length; $('#todayLabel').textContent=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long'}).format(new Date());
+    const days=[...new Set(state.logs.map(l=>l.date))].sort().reverse(); let streak=0; let d=new Date();
+    for(let i=0;i<400;i++){ const key=todayKey(d.getTime()); if(days.includes(key)){streak++;d.setDate(d.getDate()-1)} else { if(i===0){d.setDate(d.getDate()-1);continue;} break; } }
+    $('#streak').textContent=`${streak} дн.`;
+    $('#startBtn').textContent=(due.length+fresh.length)?`Начать · ${due.length+fresh.length}`:'На сегодня всё';
+  }
+  function switchView(v){ currentView=v; $$('.view').forEach(x=>x.classList.add('hidden')); $(`#view-${v}`).classList.remove('hidden'); $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v)); if(v==='home')renderHome(); if(v==='cards')renderCards(); if(v==='stats')renderStats(); if(v==='settings')renderSettings(); }
+  function buildQueue(extra=false){
+    extraMode=extra;
+    if(extra){ const ids=[...new Set(state.logs.filter(l=>l.date===todayKey()).map(l=>l.cardId))]; queue=ids.map(id=>state.cards.find(c=>c.id===id)).filter(Boolean); }
+    else { let due=dueCards(); if(state.settings.reviewLimit>0) due=due.slice(0,state.settings.reviewLimit); queue=[...due,...newCards()]; }
+    qIndex=0; revealed=false; switchView('study'); renderStudy();
+  }
+  function renderStudy(){
+    const done=qIndex>=queue.length || queue.length===0;
+    $('#studyCard').classList.toggle('hidden',done); $('#studyDone').classList.toggle('hidden',!done);
+    if(done){$('#queueInfo').textContent='готово';$('#studyProgress').style.width='100%';return}
+    const c=queue[qIndex];
+    revealed=false;
+    $('#answerBox').classList.add('hidden'); $('#rateActions').classList.add('hidden');
+    $('#queueInfo').textContent=`${qIndex+1} / ${queue.length}`; $('#studyProgress').style.width=`${(qIndex/queue.length)*100}%`;
+    const st=status(c); $('#cardTag').textContent= st==='new'?'новая':st==='known'?'закреплено':st==='due'?'повтор':'в обучении';
+    const ints=previewIntervals(c); $('#againInt').textContent=fmtInterval(ints.again);$('#hardInt').textContent=fmtInterval(ints.hard);$('#goodInt').textContent=fmtInterval(ints.good);$('#easyInt').textContent=fmtInterval(ints.easy);
+
+    if((state.settings.studyMode||'builder')==='builder'){
+      $('#directionInfo').textContent='Конструктор · Русский → немецкий';
+      $('#promptLabel').textContent='Собери немецкое предложение';
+      $('#promptText').classList.remove('de-font'); $('#promptText').classList.add('ru-font');
+      $('#promptText').innerHTML=`${esc(c.ru)}${c.model?` <span class="prompt-model">${esc(c.model)}</span>`:''}`;
+      $('#speakPromptBtn').classList.add('hidden'); $('#revealActions').classList.add('hidden'); $('#builderBox').classList.remove('hidden');
+      $('#answerText').textContent=c.de; $('#modelText').textContent=c.model||''; $('#noteText').textContent=c.note||'';
+      initBuilder(c);
+    } else {
+      $('#builderBox').classList.add('hidden'); $('#revealActions').classList.remove('hidden');
+      const dir=directionFor(c), isRuDe=dir==='ru-de';
+      $('#directionInfo').textContent=isRuDe?'Русский → немецкий':'Немецкий → русский';
+      $('#promptLabel').textContent=isRuDe?'Переведи на немецкий':'Переведи / пойми по-русски';
+      $('#promptText').classList.toggle('ru-font',isRuDe); $('#promptText').classList.toggle('de-font',!isRuDe);
+      $('#promptText').innerHTML=isRuDe?`${esc(c.ru)}${c.model?` <span class="prompt-model">${esc(c.model)}</span>`:''}`:esc(c.de);
+      $('#answerText').textContent=isRuDe?c.de:c.ru; $('#modelText').textContent=c.model||''; $('#noteText').textContent=c.note||'';
+      $('#speakPromptBtn').classList.toggle('hidden',isRuDe);
+      if(!isRuDe) speak(c.de);
+    }
+  }
+
+  function splitIntoBlocks(sentence){
+    // One step = one visible word. Punctuation stays attached to its word.
+    return String(sentence||'').trim().split(/\s+/).filter(Boolean);
+  }
+
+  function normToken(t){return t.toLowerCase().replace(/^[«„“'"(\[]+|[.,!?;:»“”'"\])]+$/g,'')}
+  function decorateLike(source, replacement){
+    const lead=source.match(/^[«„“'"(\[]*/)?.[0]||'';
+    const trail=source.match(/[.,!?;:»“”'"\])]*$/)?.[0]||'';
+    let x=String(replacement);
+    if(/^[A-ZÄÖÜ]/.test(source)) x=x.charAt(0).toUpperCase()+x.slice(1);
+    return lead+x+trail;
+  }
+  function mutateBlock(word){
+    const repl={
+      um:['für','auf','an'],für:['um','auf','gegen'],auf:['an','über','für'],an:['auf','über','mit'],
+      von:['mit','zu','über'],mit:['von','zu','über'],bei:['mit','von','in'],nach:['zu','von','über'],
+      vor:['über','mit','gegen'],über:['auf','an','von'],zu:['mit','nach','von'],in:['an','auf','bei'],unter:['über','mit','von'],
+      der:['die','dem','den'],die:['der','den','dem'],das:['dem','den','der'],den:['dem','der','die'],dem:['den','der','die'],des:['der','dem','den'],
+      ein:['einen','einem','eine'],eine:['einer','einem','einen'],einen:['einem','einer','eine'],einem:['einen','einer','eine'],einer:['einem','einen','eine'],
+      mein:['meinen','meinem','meine'],meine:['meiner','meinem','meinen'],meinen:['meinem','meiner','meine'],meinem:['meinen','meiner','meine'],
+      mich:['mir','dich','sich'],mir:['mich','dir','ihm'],dich:['dir','mich','sich'],dir:['dich','mir','ihm'],sich:['mich','dich','uns'],
+      ich:['du','er','sie'],du:['ich','er','ihr'],er:['sie','ich','wir'],sie:['er','wir','ich'],wir:['sie','ich','ihr'],
+      ist:['sind','war','wird'],sind:['ist','waren','werden'],hat:['haben','hatte','wird'],haben:['hat','hatten','werden'],
+      muss:['kann','soll','darf'],müssen:['können','sollen','dürfen'],kann:['muss','soll','darf'],können:['müssen','sollen','dürfen']
+    };
+    const clean=normToken(word), choices=repl[clean]||[];
+    return choices.map(x=>decorateLike(word,x));
+  }
+
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+  function makeBuilderOptions(correct, card, targetIndex){
+    const pool=[];
+    const add=x=>{x=String(x||'').trim();if(x && x!==correct && !pool.includes(x))pool.push(x)};
+    // Best distractors first: same grammatical family (preposition/article/pronoun etc.).
+    mutateBlock(correct).forEach(add);
+    // Then words from the same sentence, so lexical steps are not trivial.
+    builderBlocks.forEach((b,i)=>{if(i!==targetIndex)add(b)});
+    // Finally draw individual words from other cards.
+    if(pool.length<3){
+      state.cards.forEach(c=>{if(c.id===card.id)return;splitIntoBlocks(c.de).forEach(add)});
+    }
+    const distractors=shuffle(pool).slice(0,3);
+    while(distractors.length<3) distractors.push('—');
+    return shuffle([{text:correct,ok:true},...distractors.map(text=>({text,ok:false}))]);
+  }
+
+  function initBuilder(card){
+    builderBlocks=splitIntoBlocks(card.de); builderIndex=0; builderTargets=[0,1]; builderOptionsCache={}; builderMistakes=0;
+    $('#assembledSentence').innerHTML='';
+    $('#builderHint').className='builder-hint'; $('#builderHint').textContent='';
+    renderBuilderColumn(0,card,true); renderBuilderColumn(1,card,true);
+  }
+
+  function builderDisplayToken(token,targetIndex){
+    const raw=String(token||'');
+    const m=raw.match(/^([«„“'"(\[]*)(.*?)([.,!?;:»“”'"\])]*$)/);
+    const lead=m?m[1]:'';
+    const core=m?m[2]:raw;
+    const trail=m?m[3]:'';
+    if(!core) return raw;
+    const lower=core.toLocaleLowerCase('de-DE');
+    const startsUpper=/^[A-ZÄÖÜ]/.test(core);
+    if(!startsUpper) return lead+lower+trail;
+
+    // German nouns keep their capital. Sentence-initial function words do not.
+    const alwaysLower=new Set([
+      'ich','du','er','sie','es','wir','ihr','man','mich','mir','dich','dir','ihn','ihm','uns','euch','ihnen','sich',
+      'der','die','das','den','dem','des','ein','eine','einen','einem','einer','eines','kein','keine','keinen','keinem','keiner',
+      'mein','meine','meinen','meinem','meiner','dein','deine','deinen','deinem','deiner','sein','seine','seinen','seinem','seiner',
+      'ihr','ihre','ihren','ihrem','ihrer','unser','unsere','unseren','unserem','unserer','euer','eure','euren','eurem','eurer',
+      'dieser','diese','dieses','diesen','diesem','jeder','jede','jedes','jeden','jedem','welcher','welche','welches','welchen','welchem',
+      'und','oder','aber','denn','sondern','doch','weil','dass','wenn','als','ob','obwohl','während','damit','bevor','nachdem','seitdem','falls',
+      'um','für','auf','an','von','mit','bei','nach','vor','über','zu','in','unter','gegen','ohne','durch','aus','zwischen','hinter','neben',
+      'heute','morgen','gestern','jetzt','dann','danach','davor','dabei','daher','deshalb','deswegen','trotzdem','außerdem','zuerst','später','oft','manchmal','immer','nie','schon','noch','auch','nur','sehr','wirklich','vielleicht','wahrscheinlich',
+      'ist','sind','war','waren','wird','werden','hat','haben','hatte','hatten','kann','können','muss','müssen','soll','sollen','darf','dürfen','möchte','möchten'
+    ]);
+
+    // If the same lexeme occurs lowercase anywhere in the deck, it is not a noun.
+    let seenLower=false;
+    if(targetIndex===0 && state && Array.isArray(state.cards)){
+      outer: for(const c of state.cards){
+        const words=String(c.de||'').split(/\s+/);
+        for(const w of words){
+          const n=normToken(w);
+          if(n===lower && /^[a-zäöüß]/.test(String(w).replace(/^[«„“'"(\[]+/,''))){seenLower=true;break outer;}
+        }
+      }
+    }
+    const keepCapital = !alwaysLower.has(lower) && !(targetIndex===0 && seenLower);
+    const shown = keepCapital ? core.charAt(0).toLocaleUpperCase('de-DE')+core.slice(1).toLocaleLowerCase('de-DE') : lower;
+    return lead+shown+trail;
+  }
+
+  function renderBuilderColumn(col,card,force=false){
+    const wrap=$(`#builderCol${col}`), box=$(`#builderOptions${col}`), target=builderTargets[col];
+    const active=builderIndex<builderBlocks.length && (builderIndex%2)===col;
+    wrap.classList.toggle('active',active); wrap.classList.toggle('inactive',!active && target<builderBlocks.length); wrap.classList.toggle('done',target>=builderBlocks.length);
+    if(target>=builderBlocks.length){box.innerHTML='';return}
+    if(force || !builderOptionsCache[target]) builderOptionsCache[target]=makeBuilderOptions(builderBlocks[target],card,target);
+    box.innerHTML=builderOptionsCache[target].map((o,i)=>`<button class="builder-option" data-col="${col}" data-target="${target}" data-idx="${i}">${esc(builderDisplayToken(o.text,target))}</button>`).join('');
+    [...box.querySelectorAll('.builder-option')].forEach(btn=>btn.onclick=()=>chooseBuilderOption(btn,card));
+  }
+
+  function chooseBuilderOption(btn,card){
+    const col=+btn.dataset.col, target=+btn.dataset.target;
+    if(builderIndex>=builderBlocks.length || col!==(builderIndex%2) || target!==builderIndex) return;
+    const option=builderOptionsCache[target][+btn.dataset.idx];
+    if(!option.ok){
+      builderMistakes++; btn.classList.remove('wrong'); void btn.offsetWidth; btn.classList.add('wrong');
+      $('#builderHint').className='builder-hint error'; $('#builderHint').textContent='Попробуй ещё раз';
+      return;
+    }
+    btn.classList.add('correct');
+    const assembled=builderBlocks.slice(0,builderIndex+1);
+    $('#assembledSentence').innerHTML=assembled.map(x=>`<span class="built-block">${esc(x)}</span>`).join('');
+    builderIndex++;
+    builderTargets[col]=target+2;
+    renderBuilderColumn(col,card,true);
+    renderBuilderColumn(1-col,card,false);
+    if(builderIndex>=builderBlocks.length){finishBuilder(card);return}
+    $('#builderHint').className='builder-hint'; $('#builderHint').textContent='';
+  }
+
+  function finishBuilder(card){
+    revealed=true;
+    $('#builderHint').className='builder-hint success';
+    $('#builderHint').textContent=builderMistakes?`Предложение собрано. Ошибок: ${builderMistakes}.`:'Предложение собрано без ошибок';
+    $('#answerBox').classList.remove('hidden'); $('#rateActions').classList.remove('hidden'); $('#revealActions').classList.add('hidden');
+    $('#answerText').textContent=card.de; $('#modelText').textContent=card.model||''; $('#noteText').textContent=card.note||'';
+    if(state.settings.autoSpeak) speak(card.de);
+  }
+
+  function reveal(){
+    if((state.settings.studyMode||'builder')==='builder')return;
+    if(qIndex>=queue.length||revealed)return; revealed=true; $('#answerBox').classList.remove('hidden');$('#revealActions').classList.add('hidden');$('#rateActions').classList.remove('hidden'); const c=queue[qIndex]; if(state.settings.autoSpeak && directionFor(c)==='ru-de') speak(c.de);
+  }
+  function previewIntervals(c){
+    if(c.reps===0) return {again:10*MIN,hard:DAY,good:2*DAY,easy:4*DAY};
+    const base=Math.max(1,c.interval||1); return {again:10*MIN,hard:Math.max(DAY,Math.round(base*1.2*DAY)),good:Math.max(2*DAY,Math.round(base*c.ease*DAY)),easy:Math.max(4*DAY,Math.round(base*(c.ease+.65)*DAY))};
+  }
+  function grade(g){
+    if(qIndex>=queue.length||!revealed)return; const c=queue[qIndex]; const before=JSON.parse(JSON.stringify(c)); const logLen=state.logs.length; const wasNew=c.reps===0; const t=now(); let delay;
+    if(!extraMode){
+      if(g==='again'){c.lapses++;c.ease=Math.max(1.3,c.ease-.2);c.interval=0;c.due=t+10*MIN;delay=10*MIN;}
+      if(g==='hard'){c.ease=Math.max(1.3,c.ease-.15);c.interval=c.reps===0?1:Math.max(1,Math.round(Math.max(1,c.interval)*1.2));c.due=t+c.interval*DAY;delay=c.interval*DAY;}
+      if(g==='good'){c.interval=c.reps===0?2:Math.max(2,Math.round(Math.max(1,c.interval)*c.ease));c.due=t+c.interval*DAY;delay=c.interval*DAY;}
+      if(g==='easy'){c.ease+=.15;c.interval=c.reps===0?4:Math.max(4,Math.round(Math.max(1,c.interval)*(c.ease+.5)));c.due=t+c.interval*DAY;delay=c.interval*DAY;}
+      c.reps++; c.last=t; c.history.push({t,grade:g,due:c.due,interval:c.interval,ease:c.ease});
+    } else delay=0;
+    state.logs.push({t,date:todayKey(t),cardId:c.id,grade:g,wasNew,extra:extraMode}); lastAction={cardId:c.id,before,logLen,qIndex}; save(); qIndex++; renderStudy(); renderHome();
+  }
+  function undo(){ if(!lastAction)return toast('Нечего отменять'); const idx=state.cards.findIndex(c=>c.id===lastAction.cardId); if(idx>=0)state.cards[idx]=lastAction.before; state.logs=state.logs.slice(0,lastAction.logLen); qIndex=lastAction.qIndex; lastAction=null; save();renderStudy();renderHome();toast('Последний ответ отменён'); }
+  function speak(text){ if(!('speechSynthesis' in window)) return toast('Озвучка не поддерживается браузером'); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.92; const voices=speechSynthesis.getVoices(); const v=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('de')); if(v)u.voice=v;speechSynthesis.speak(u); }
+  function renderCards(){
+    const q=$('#searchInput').value.trim().toLowerCase(); const list=state.cards.filter(c=>!q||[c.ru,c.de,c.model,c.tags,c.note].join(' ').toLowerCase().includes(q)); const el=$('#cardsList');
+    if(!list.length){el.innerHTML='<div class="empty">Ничего не найдено</div>';return}
+    el.innerHTML=list.map(c=>{const st=status(c),label=st==='new'?'новая':st==='known'?'закреплено':st==='due'?'сегодня':`повтор ${fmtDate(c.due)}`;return `<div class="row cardrow" data-id="${c.id}"><div><div class="de">${esc(c.model||'без модели')}</div><div class="muted" style="font-size:12px;margin-top:4px">${esc(c.tags||'')}</div></div><div><div>${esc(c.de)}</div><div class="ru">${esc(c.ru)}</div></div><span class="pill ${st}">${label}</span></div>`}).join('');
+    $$('.cardrow').forEach(r=>r.onclick=()=>editCard(r.dataset.id));
+  }
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function editCard(id){const c=state.cards.find(x=>x.id===id);if(!c)return;editId=id;$('#fRu').value=c.ru;$('#fDe').value=c.de;$('#fModel').value=c.model||'';$('#fTags').value=c.tags||'';$('#fNote').value=c.note||'';$('#addOneBtn').textContent='Сохранить изменения';$('#cancelEditBtn').classList.remove('hidden');switchView('add');}
+  function clearForm(){editId=null;['#fRu','#fDe','#fModel','#fTags','#fNote'].forEach(x=>$(x).value='');$('#addOneBtn').textContent='Добавить';$('#cancelEditBtn').classList.add('hidden');}
+  function addOne(){const ru=$('#fRu').value.trim(),de=$('#fDe').value.trim();if(!ru||!de)return toast('Нужны русский и немецкий тексты');const obj={ru,de,model:$('#fModel').value.trim(),tags:$('#fTags').value.trim(),note:$('#fNote').value.trim()};if(editId){Object.assign(state.cards.find(c=>c.id===editId),obj);toast('Карточка сохранена')}else{state.cards.push({id:uid(),...obj,created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});toast('Карточка добавлена')}save();clearForm();renderHome();}
+  function xlsxColIndex(ref){const m=String(ref||'').match(/^([A-Z]+)/i);if(!m)return 0;let n=0;for(const ch of m[1].toUpperCase())n=n*26+(ch.charCodeAt(0)-64);return n-1;}
+  function xmlText(node){return node?[...node.getElementsByTagName('t')].map(x=>x.textContent||'').join(''):'';}
+  function normHeader(s){return String(s||'').trim().toLowerCase().replace(/ё/g,'е').replace(/[._\-–—/\\()]+/g,' ').replace(/\s+/g,' ');}
+  function headerKind(s){const h=normHeader(s);if(['русский','русское предложение','рус','ru','russian'].includes(h))return 'ru';if(['deutsch','немецкий','немецкое предложение','de','german'].includes(h))return 'de';if(['модель','глагол','глагол модель','управление','model','verb model'].includes(h))return 'model';if(['теги','тег','tags','tag'].includes(h))return 'tags';if(['комментарий','подсказка','примечание','note','comment','comments'].includes(h))return 'note';return '';}
+  async function readXlsxRows(file){
+    if(!window.JSZip)throw new Error('Не найден локальный модуль чтения Excel');
+    const zip=await JSZip.loadAsync(await file.arrayBuffer());
+    const parser=new DOMParser();
+    let shared=[];
+    const ss=zip.file('xl/sharedStrings.xml');
+    if(ss){const doc=parser.parseFromString(await ss.async('text'),'application/xml');shared=[...doc.getElementsByTagName('si')].map(xmlText);}
+    let sheetPath='';
+    const wbFile=zip.file('xl/workbook.xml'),relFile=zip.file('xl/_rels/workbook.xml.rels');
+    if(wbFile&&relFile){
+      const wb=parser.parseFromString(await wbFile.async('text'),'application/xml');
+      const first=[...wb.getElementsByTagName('sheet')][0];
+      const rid=first&&(first.getAttribute('r:id')||first.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id'));
+      if(rid){
+        const rels=parser.parseFromString(await relFile.async('text'),'application/xml');
+        const rel=[...rels.getElementsByTagName('Relationship')].find(x=>x.getAttribute('Id')===rid);
+        if(rel){let target=rel.getAttribute('Target')||'';target=target.replace(/^\//,'');sheetPath=target.startsWith('xl/')?target:'xl/'+target.replace(/^\.\//,'');}
+      }
+    }
+    if(!sheetPath||!zip.file(sheetPath)){const names=Object.keys(zip.files).filter(n=>/^xl\/worksheets\/sheet\d+\.xml$/i.test(n)).sort();sheetPath=names[0]||'';}
+    const sf=sheetPath&&zip.file(sheetPath);if(!sf)throw new Error('В книге не найден лист');
+    const doc=parser.parseFromString(await sf.async('text'),'application/xml');
+    const out=[];
+    for(const row of [...doc.getElementsByTagName('row')]){
+      const arr=[];
+      for(const c of [...row.getElementsByTagName('c')]){
+        const idx=xlsxColIndex(c.getAttribute('r'));const type=c.getAttribute('t')||'';let val='';
+        if(type==='inlineStr')val=xmlText(c);else{const v=c.getElementsByTagName('v')[0];const raw=v?v.textContent:'';if(type==='s')val=shared[Number(raw)]??'';else if(type==='b')val=raw==='1'?'TRUE':'FALSE';else val=raw??'';}
+        arr[idx]=String(val??'');
+      }
+      out.push(arr);
+    }
+    return out;
+  }
+  async function importXlsxFile(file){
+    const statusEl=$('#xlsxStatus');statusEl.textContent='Читаю файл…';
+    try{
+      const rows=(await readXlsxRows(file)).filter(r=>r.some(v=>String(v||'').trim()));if(!rows.length)throw new Error('Файл пуст');
+      const first=rows[0]||[],map={};first.forEach((v,i)=>{const k=headerKind(v);if(k&&map[k]==null)map[k]=i;});
+      const hasHeaders=map.ru!=null&&map.de!=null;if(!hasHeaders)Object.assign(map,{ru:0,de:1,model:2,tags:3,note:4});
+      let added=0,dupes=0,incomplete=0;const existing=new Set(state.cards.map(c=>`${String(c.ru).trim()}\u0000${String(c.de).trim()}`));
+      for(const r of rows.slice(hasHeaders?1:0)){
+        const get=k=>String(r[map[k]]??'').trim(),ru=get('ru'),de=get('de');if(!ru&&!de)continue;if(!ru||!de){incomplete++;continue;}
+        const key=`${ru}\u0000${de}`;if(existing.has(key)){dupes++;continue;}existing.add(key);
+        state.cards.push({id:uid(),ru,de,model:get('model'),tags:get('tags'),note:get('note'),created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});added++;
+      }
+      save();renderHome();if(currentView==='cards')renderCards();let msg=`Добавлено: ${added}`;if(dupes)msg+=` · дублей пропущено: ${dupes}`;if(incomplete)msg+=` · неполных строк: ${incomplete}`;statusEl.textContent=msg;toast(`Excel: добавлено ${added}`);
+    }catch(err){statusEl.textContent=`Не удалось импортировать: ${err&&err.message?err.message:'ошибка файла'}`;toast('Не удалось прочитать Excel');}
+  }
+  function bulkImport(){const raw=$('#bulkInput').value.trim();if(!raw)return toast('Вставь данные');let added=0;for(const line of raw.split(/\r?\n/)){if(!line.trim())continue;const sep=line.includes('\t')?'\t':'|';const p=line.split(sep).map(s=>s.trim());if(p.length<2||!p[0]||!p[1])continue;state.cards.push({id:uid(),ru:p[0],de:p[1],model:p[2]||'',tags:p[3]||'',note:p[4]||'',created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});added++;}save();$('#bulkInput').value='';renderHome();toast(`Добавлено: ${added}`);}
+  function renderStats(){
+    const start=new Date();start.setHours(0,0,0,0);const days=[];for(let i=13;i>=0;i--){const d=new Date(start);d.setDate(d.getDate()-i);days.push(todayKey(d.getTime()))}const counts=days.map(k=>state.logs.filter(l=>l.date===k).length),max=Math.max(1,...counts);$('#barChart').innerHTML=counts.map(n=>`<div class="bar" title="${n} ответов" style="height:${Math.max(2,n/max*100)}%"></div>`).join('');$('#barLabels').innerHTML=days.map(k=>`<span>${k.slice(8)}</span>`).join('');$('#reviewTotal').textContent=`${counts.reduce((a,b)=>a+b,0)} ответов`;
+    $('#stNew').textContent=state.cards.filter(c=>c.reps===0).length;$('#stLearning').textContent=state.cards.filter(c=>c.reps>0&&c.interval<21).length;$('#stMature').textContent=matureCount();$('#stLapses').textContent=state.cards.reduce((a,c)=>a+(c.lapses||0),0);
+    for(const g of ['again','hard','good','easy'])$(`#st${g[0].toUpperCase()+g.slice(1)}`).textContent=state.logs.filter(l=>l.grade===g).length;
+  }
+  function renderSettings(){ $('#setNewLimit').value=state.settings.newLimit;$('#setReviewLimit').value=state.settings.reviewLimit;$('#setStudyMode').value=state.settings.studyMode||'builder';$('#setDirection').value=state.settings.direction;$('#setAutoSpeak').checked=!!state.settings.autoSpeak; }
+  function applyTheme(){document.documentElement.dataset.theme=state.settings.theme||'light';}
+  function saveSettings(){state.settings.newLimit=Math.max(0,+$('#setNewLimit').value||0);state.settings.reviewLimit=Math.max(0,+$('#setReviewLimit').value||0);state.settings.studyMode=$('#setStudyMode').value;state.settings.direction=$('#setDirection').value;state.settings.autoSpeak=$('#setAutoSpeak').checked;save();renderHome();toast('Настройки сохранены')}
+  function download(name,text,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+  function exportJson(){download(`rektion-backup-${todayKey()}.json`,JSON.stringify(state,null,2));}
+  function templateCsv(){download('rektion-import-template.tsv','Русский\tDeutsch\tМодель\tТеги\tКомментарий\nЯ подаю заявление на визу.\tIch beantrage ein Visum.\tbeantragen + A\tVerwaltung\tофициальный запрос\n','text/tab-separated-values;charset=utf-8')}
+  function resetSchedule(){if(!confirm('Сбросить интервалы и прогресс, но оставить все карточки?'))return;state.cards.forEach(c=>Object.assign(c,{due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]}));state.logs=[];save();renderHome();toast('Расписание сброшено')}
+  function resetAll(){if(!confirm('Удалить все карточки и прогресс? Это нельзя отменить без резервной копии.'))return;state={...baseState(),cards:[]};save();applyTheme();renderHome();toast('Все данные удалены')}
+
+  $$('#nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view)); $$('[data-jump]').forEach(b=>b.onclick=()=>switchView(b.dataset.jump));
+  $('#startBtn').onclick=()=>buildQueue(false);$('#revealBtn').onclick=reveal;$$('[data-grade]').forEach(b=>b.onclick=()=>grade(b.dataset.grade));$('#extraBtn').onclick=()=>buildQueue(true);
+  $('#speakPromptBtn').onclick=()=>{const c=queue[qIndex];if(c)speak(c.de)};$('#speakAnswerBtn').onclick=()=>{const c=queue[qIndex];if(c)speak(c.de)};
+  $('#searchInput').oninput=renderCards;$('#addOneBtn').onclick=addOne;$('#cancelEditBtn').onclick=clearForm;$('#bulkBtn').onclick=bulkImport;$('#downloadTemplateBtn').onclick=templateCsv;
+  $('#xlsxFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(f)await importXlsxFile(f);e.target.value='';};
+  $('#saveSettingsBtn').onclick=saveSettings;$('#exportBtn').onclick=exportJson;$('#resetScheduleBtn').onclick=resetSchedule;$('#resetAllBtn').onclick=resetAll;
+  $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.cards||!s.settings)throw 0;state=s;save();applyTheme();renderHome();toast('Резервная копия импортирована')}catch{toast('Не удалось прочитать файл')}e.target.value='';};
+  $('#themeBtn').onclick=()=>{state.settings.theme=(state.settings.theme==='dark'?'light':'dark');save();applyTheme();};
+  document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.code==='Space'&&currentView==='study'&&(state.settings.studyMode||'builder')!=='builder'){e.preventDefault();reveal()}if(currentView==='study'&&revealed&&['1','2','3','4'].includes(e.key)){grade({1:'again',2:'hard',3:'good',4:'easy'}[e.key])}if(e.key.toLowerCase()==='z'&&currentView==='study')undo();});
+  applyTheme(); renderHome();
+})();
+</script>
+
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

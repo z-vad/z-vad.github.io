@@ -1,0 +1,17 @@
+{
+  "name": "Rektion — немецкое управление",
+  "short_name": "Rektion",
+  "description": "Интервальный тренажёр немецкого управления и сборки предложений.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#145b4c",
+  "theme_color": "#145b4c",
+  "icons": [
+    {"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"icons/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ]
+}
