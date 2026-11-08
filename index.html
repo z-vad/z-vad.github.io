@@ -630,7 +630,6 @@ body:before{
   if(!state.cards) state.cards=[];
   function normalizeLibrary(){if(!Array.isArray(state.groups))state.groups=[];for(const c of state.cards)if(c.groupId===undefined)c.groupId=null;}
   normalizeLibrary();
-  normalizeVocab();
   let currentView='home', queue=[], qIndex=0, revealed=false, lastAction=null, editId=null, activeGroup='all', sessionGood=0;
   let builderBlocks=[], builderIndex=0, builderTargets=[0,1], builderOptionsCache={}, builderMistakes=0;
 
