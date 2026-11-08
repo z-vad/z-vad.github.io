@@ -416,7 +416,7 @@ body:before{
         <div class="panel full">
           <div class="section-title"><h3>Вокабуляр · выращивай слова</h3><span class="muted">Без расписания</span></div>
           <p class="vocab-section-note">Четыре упражнения: выбор из четырёх, выбор на слух, сборка из частей и письменный ввод. Каждое слово должно успешно пройти все четыре разных типа проверки, чтобы перейти на следующую стадию. За день — максимум пять новых слов в каждой группе. Повторять старые можно в любое время.</p>
-          <div class="vocab-stage-track" id="vocabLegend"></div>
+          <div id="vocabLegend" class="hidden" aria-hidden="true"></div>
           <div class="vocab-toolbar"><input id="vocabNewGroup" maxlength="100" placeholder="Название новой группы, например: B2–C1 идиомы"/><button class="primary" id="vocabCreateGroup">Создать группу</button></div>
           <div class="vocab-groups-list" id="vocabGroupsList"></div>
         </div>
@@ -457,7 +457,7 @@ body:before{
         <div class="panel" style="margin-bottom:12px">
           <div class="vocab-progress"><span id="vocabSessionInfo"></span><span id="vocabSessionScore"></span></div>
           <div class="progress"><div id="vocabSessionBar"></div></div>
-          <div class="vocab-stage-track" id="vocabSessionStages"></div>
+          <div id="vocabSessionStages" class="hidden" aria-hidden="true"></div>
           <div class="prompt-label" id="vocabTaskLabel" style="text-align:center"></div>
           <div class="vocab-question" id="vocabTaskPrompt"></div>
           <div class="vocab-audio hidden" id="vocabAudioWrap"><button class="secondary" id="vocabPlayAudio">🔊 Прослушать ещё раз</button></div>
@@ -1285,7 +1285,7 @@ body:before{
     const c=state.vocabCards.find(x=>x.id===task.id);
     if(!c){vocabIndex++;showVocabQuestion();return;}
     vocabIsAnswered=false;vocabCurrentMode=task.mode;
-    $('#vocabSessionInfo').textContent='Проверка '+(vocabIndex+1)+' / '+vocabQueue.length+' · '+vocabGroupName(c.groupId);
+    $('#vocabSessionInfo').textContent='Слово '+(vocabSessionWords.indexOf(task.id)+1)+' / '+vocabSessionWords.length+' · проверка '+(vocabIndex+1)+' / '+vocabQueue.length+' · '+vocabGroupName(c.groupId);
     $('#vocabSessionScore').textContent=vocabSuccessful+' верно · '+vocabMistakes+' ошибок';
     $('#vocabSessionBar').style.width=Math.round(100*vocabIndex/vocabQueue.length)+'%';
     $('#vocabSessionStages').innerHTML=vocabStageMarkup(c.stage);
