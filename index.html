@@ -415,7 +415,7 @@ body:before{
       <div class="grid" id="vocabLibrary">
         <div class="panel full">
           <div class="section-title"><h3>Вокабуляр · выращивай слова</h3><span class="muted">Без расписания</span></div>
-          <p class="vocab-section-note">Четыре упражнения: выбор из четырёх, выбор на слух, сборка из частей и письменный ввод. Каждое слово должно успешно пройти все четыре разных типа проверки, чтобы перейти на следующую стадию. За день — максимум пять новых слов в каждой группе. Повторять старые можно в любое время.</p>
+          <p class="vocab-section-note">Четыре упражнения: выбор из четырёх, выбор на слух, сборка из частей и письменный ввод. Для перехода на следующую стадию каждое слово должно успешно пройти все четыре типа проверки. Новые слова изучаются порциями по пять — в любое время и без дневного ограничения. Старые тоже можно повторять когда угодно.</p>
           <div id="vocabLegend" class="hidden" aria-hidden="true"></div>
           <div class="vocab-toolbar"><input id="vocabNewGroup" maxlength="100" placeholder="Название новой группы, например: B2–C1 идиомы"/><button class="primary" id="vocabCreateGroup">Создать группу</button></div>
           <div class="vocab-groups-list" id="vocabGroupsList"></div>
@@ -423,7 +423,7 @@ body:before{
         <div class="panel full hidden" id="vocabGroupDetail">
           <div class="section-title"><h3 id="vocabGroupTitle">Группа</h3><button class="secondary" id="vocabCloseGroup">Назад к группам</button></div>
           <p class="vocab-section-note" id="vocabGroupSummary"></p>
-          <div class="controls" style="margin:15px 0"><button class="primary" id="vocabStartNew">Учить новые (5)</button><button class="secondary" id="vocabStartOld">Повторить старые (5)</button></div>
+          <div class="controls" style="margin:15px 0"><button class="primary" id="vocabStartNew">Учить 5 новых</button><button class="secondary" id="vocabStartOld">Повторить старые (5)</button></div>
           <p class="vocab-section-note">Список слов и их состояния. Смена стадии происходит только после четырёх <b>разных</b> успешных типов проверки: выбор, слух, сборка, ввод.</p>
           <div id="vocabGroupWordList" class="vocab-library-list"></div>
         </div>
@@ -470,7 +470,7 @@ body:before{
           <div class="controls" style="margin-top:16px"><button class="primary hidden" id="vocabNext">Следующее слово</button><button class="secondary" id="vocabExit">Вернуться к группам</button></div>
         </div>
       </div>
-      <div class="panel hidden" id="vocabDone" style="max-width:820px;margin:auto"><h3>Тренировка завершена!</h3><p id="vocabDoneMessage"></p><div class="controls"><button class="primary" id="vocabRepeat">Пройти группу ещё раз</button><button class="secondary" id="vocabBack">К группам</button></div></div>
+      <div class="panel hidden" id="vocabDone" style="max-width:820px;margin:auto"><h3>Тренировка завершена!</h3><p id="vocabDoneMessage"></p><div class="controls"><button class="primary hidden" id="vocabMoreNew">Учить ещё 5 новых</button><button class="secondary" id="vocabRepeat">Повторять старые (5)</button><button class="secondary" id="vocabBack">К группам</button></div></div>
     </section>
 
     <section id="view-cards" class="view hidden">
@@ -1077,8 +1077,7 @@ body:before{
   function vocabCardsInGroup(id){return state.vocabCards.filter(c=>id==='ungrouped'?!c.groupId:c.groupId===id);}
   function vocabNewTodayCount(id){return vocabDailyRecord(id).ids.length;}
   function vocabNewAvailable(id){
-    return Math.max(0,VOCAB_DAILY_LIMIT-vocabNewTodayCount(id))>0&&
-      vocabCardsInGroup(id).some(c=>!c.introduced&&c.stage===0);
+    return vocabCardsInGroup(id).some(c=>!c.introduced&&c.stage===0);
   }
   function vocabPasses(c){return c.passedModes?.length||0;}
   function vocabGroupName(id){return !id?'Без группы':state.vocabGroups.find(g=>g.id===id)?.name||'Без группы'}
@@ -1097,7 +1096,7 @@ body:before{
     $('#vocabGroupsList').innerHTML=[...state.vocabGroups,{id:'ungrouped',name:'Без группы',fixed:true}].map(g=>{
       const cards=vocabCardsInGroup(g.id),n=cards.length,flowers=cards.filter(c=>c.stage===4).length;
       const used=vocabNewTodayCount(g.id);
-      return '<div class="vocab-group-tile"><strong>'+esc(g.name)+'</strong><div class="vocab-status">'+n+' слов · 🌸 '+flowers+' выращено · новых сегодня '+used+'/'+VOCAB_DAILY_LIMIT+'</div><div class="controls">'+
+      return '<div class="vocab-group-tile"><strong>'+esc(g.name)+'</strong><div class="vocab-status">'+n+' слов · 🌸 '+flowers+' выращено · новых сегодня '+used+'</div><div class="controls">'+
         '<button class="primary" data-vopen="'+esc(g.id)+'" '+(!n?'disabled':'')+'>Открыть группу</button><button class="secondary" data-vadd="'+esc(g.id)+'">Добавить</button>'+
         (g.fixed?'':'<button class="secondary" data-vrename="'+esc(g.id)+'">Имя</button><button class="secondary danger" data-vremove="'+esc(g.id)+'">Удалить</button>')+'</div></div>';
     }).join('');
@@ -1119,15 +1118,15 @@ body:before{
   function renderOpenedVocabGroup(){
     const id=vocabOpenedGroup;if(id===null)return;
     const cards=vocabCardsInGroup(id);
-    const used=vocabNewTodayCount(id),left=Math.max(0,VOCAB_DAILY_LIMIT-used);
+    const used=vocabNewTodayCount(id);
     const fresh=cards.filter(c=>!c.introduced&&c.stage===0).length;
     const old=cards.filter(c=>c.introduced||c.stage>0).length;
     $('#vocabGroupTitle').textContent=vocabGroupName(id);
-    $('#vocabGroupSummary').textContent=cards.length+' слов · новых изучено сегодня: '+used+'/'+VOCAB_DAILY_LIMIT+
+    $('#vocabGroupSummary').textContent=cards.length+' слов · новых изучено сегодня: '+used+
       ' · новых осталось: '+fresh+' · старых: '+old;
-    const n=Math.min(left,fresh);
+    const n=Math.min(VOCAB_DAILY_LIMIT,fresh);
     $('#vocabStartNew').disabled=n===0;
-    $('#vocabStartNew').textContent=n?'Учить новые ('+n+')':'Новые сегодня недоступны';
+    $('#vocabStartNew').textContent=n?'Учить новые ('+n+')':'Новых слов пока нет';
     $('#vocabStartOld').disabled=old===0;
     $('#vocabStartOld').textContent='Повторить старые ('+Math.min(VOCAB_DAILY_LIMIT,old)+')';
     $('#vocabGroupWordList').innerHTML=cards.length?cards.map(c=>
@@ -1217,9 +1216,9 @@ body:before{
     vocabSessionType=kind;
     let pool=vocabCardsInGroup(groupId);
     if(kind==='new'){
-      const rec=vocabDailyRecord(groupId),left=Math.max(0,VOCAB_DAILY_LIMIT-rec.ids.length);
-      pool=pool.filter(c=>c.stage===0&&!c.introduced).slice(0,left);
-      if(!pool.length)return toast('Лимит новых слов на сегодня исчерпан');
+      const rec=vocabDailyRecord(groupId);
+      pool=pool.filter(c=>c.stage===0&&!c.introduced).slice(0,VOCAB_DAILY_LIMIT);
+      if(!pool.length)return toast('В этой группе пока нет новых слов');
       rec.ids.push(...pool.map(c=>c.id));state.vocabDailyNew[vocabDailyKey(groupId)]=rec;
       pool.forEach(c=>c.introduced=true);save();
     }else{
@@ -1353,7 +1352,8 @@ body:before{
   function endVocabSession(){
     $('#vocabSession').classList.add('hidden');$('#vocabDone').classList.remove('hidden');
     $('#vocabDoneMessage').textContent='Слов в занятии: '+vocabSessionWords.length+'. Пройдено проверок: '+vocabSuccessful+'. Ошибок: '+vocabMistakes+'. Переходов на следующую стадию: '+vocabAdvanced+'.';
-    $('#vocabRepeat').textContent='Продолжить тренировать старые';
+    $('#vocabRepeat').textContent='Повторять старые (5)';
+    $('#vocabMoreNew').classList.toggle('hidden',!vocabNewAvailable(vocabChosenGroup));
   }
   function exitVocabSession(){
     $('#vocabSession').classList.add('hidden');$('#vocabDone').classList.add('hidden');$('#vocabLibrary').classList.remove('hidden');renderVocab();
@@ -1378,6 +1378,7 @@ body:before{
     $('#vocabExit').onclick=exitVocabSession;
     $('#vocabBack').onclick=exitVocabSession;
     $('#vocabRepeat').onclick=()=>startVocabSession(vocabChosenGroup,'old');
+    $('#vocabMoreNew').onclick=()=>startVocabSession(vocabChosenGroup,'new');
   }
 
   function renderStats(){
