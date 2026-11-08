@@ -283,6 +283,46 @@ body:before{
 .group-stats b{font-size:25px;display:block}.group-stats small{color:var(--muted)}
 .group-picker{min-width:175px;max-width:310px}
 @media(max-width:700px){.my-group .controls{width:100%}.my-group .controls button{flex:1}}
+/* Rektion Vocabulary / flower learning mode. */
+.vocab-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0}
+.vocab-toolbar input,.vocab-toolbar select{min-width:160px;flex:1}
+.vocab-groups-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.vocab-group-tile{background:rgba(255,255,255,.13);padding:17px;min-width:0}
+.vocab-group-tile strong{font-size:18px;overflow-wrap:anywhere}
+.vocab-group-tile .controls{margin-top:14px;gap:7px}
+.vocab-group-tile button{padding:8px 10px}
+.vocab-stage-track{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.vocab-stage-chip{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:58px;opacity:.5}
+.vocab-stage-chip.current{opacity:1;transform:scale(1.06)}
+.vocab-stage-chip .vocab-emoji{font-size:33px;line-height:1.4}
+.vocab-stage-chip small{font-size:11px;text-align:center;color:var(--muted)}
+.vocab-stage-bar{height:5px;background:rgba(255,255,255,.17);overflow:hidden;margin:12px 0 20px}
+.vocab-stage-bar span{display:block;height:100%;background:var(--accent);transition:width .2s}
+.vocab-question{font-size:clamp(22px,4vw,34px);line-height:1.4;text-align:center;margin:14px auto 22px;max-width:750px}
+.vocab-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.vocab-options button{min-height:70px;font:inherit;font-size:19px;overflow-wrap:anywhere;white-space:normal;padding:11px 15px;text-align:center}
+.vocab-audio{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 0}
+.vocab-tiles{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;margin:20px auto;max-width:670px}
+.vocab-tiles button{font:inherit;font-size:22px;min-height:49px;min-width:48px;padding:8px 14px}
+.vocab-tiles button:disabled{opacity:.25}
+.vocab-built{min-height:66px;text-align:center;font-size:26px;padding:12px;margin:12px auto;background:rgba(255,255,255,.12);overflow-wrap:anywhere}
+.vocab-result{padding:17px 0 8px;margin-top:16px;border-top:1px solid var(--line)}
+.vocab-result .vocab-solution{font-size:clamp(24px,4vw,34px);font-family:'AdobeGaramondLocal',Garamond,serif}
+.vocab-progress{margin-bottom:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px}
+.vocab-library-list{display:flex;flex-direction:column;gap:8px;max-height:550px;overflow:auto}
+.vocab-row{display:flex;gap:12px;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:11px 0}
+.vocab-row .vocab-de{font-size:21px;font-family:'AdobeGaramondLocal',Garamond,serif}
+.vocab-row .vocab-ru{color:var(--muted);font-size:13px}
+.vocab-row .controls{gap:6px;flex-shrink:0}
+.vocab-row .controls button{font-size:12px;padding:7px 10px}
+.vocab-status{font-size:13px;color:var(--muted);margin-top:7px;min-height:18px}
+.vocab-correct{color:var(--good)}
+.vocab-incorrect{color:var(--danger)}
+.vocab-section-note{margin:12px 0;color:var(--muted);font-size:13px;line-height:1.5}
+@keyframes vocabGrow{from{transform:scale(.75);opacity:.4}to{transform:scale(1);opacity:1}}
+.vocab-grown{animation:vocabGrow .4s ease-out}
+@media(max-width:640px){.vocab-options{grid-template-columns:1fr}.vocab-options button{min-height:55px}.vocab-row{align-items:flex-start;flex-direction:column}.vocab-tiles button{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -294,6 +334,7 @@ body:before{
   <nav class="nav" id="nav">
     <button data-view="home" class="active">Группы</button>
     <button data-view="study">Учить</button>
+    <button data-view="vocab">Вокабуляр</button>
     <button data-view="cards">Карточки</button>
     <button data-view="add">Добавить</button>
     <button data-view="stats">Статистика</button>
@@ -361,6 +402,61 @@ body:before{
         </div>
         <div id="studyDone" class="panel empty hidden"><h3>Группа пройдена</h3><p id="studyDoneSummary">Все предложения пройдены.</p><div class="controls" style="justify-content:center"><button class="primary" id="extraBtn">Пройти ещё раз</button><button class="secondary" data-jump="home">К группам</button></div></div>
       </div>
+    </section>
+
+    <section id="view-vocab" class="view hidden">
+      <div class="grid" id="vocabLibrary">
+        <div class="panel full">
+          <div class="section-title"><h3>Вокабуляр · выращивай слова</h3><span class="muted">Без расписания</span></div>
+          <p class="vocab-section-note">Четыре упражнения: выбор из четырёх, выбор на слух, сборка из частей и письменный ввод. Правильный ответ развивает слово — от семечка до цветка. Тренировать любую группу можно в любое время.</p>
+          <div class="vocab-stage-track" id="vocabLegend"></div>
+          <div class="vocab-toolbar"><input id="vocabNewGroup" maxlength="100" placeholder="Название новой группы, например: B2–C1 идиомы"/><button class="primary" id="vocabCreateGroup">Создать группу</button></div>
+          <div class="vocab-groups-list" id="vocabGroupsList"></div>
+        </div>
+        <div class="panel half">
+          <div class="section-title"><h3>Добавить слово</h3></div>
+          <div class="formgrid">
+            <div class="field span2"><label>Группа вокабуляра</label><select id="vocabAddGroup"></select></div>
+            <div class="field span2"><label>Русский перевод или подсказка</label><input id="vocabRu" placeholder="Мириться с недостатками"/></div>
+            <div class="field span2"><label>Немецкое слово или выражение</label><input id="vocabDe" placeholder="Nachteile in Kauf nehmen"/></div>
+            <div class="field span2"><label>Пример (необязательно)</label><input id="vocabExample" placeholder="Wir müssen Nachteile in Kauf nehmen."/></div>
+            <div class="field span2"><label>Комментарий (необязательно)</label><input id="vocabNote" placeholder="etwas in Kauf nehmen"/></div>
+          </div>
+          <div class="controls" style="margin-top:14px"><button class="primary" id="vocabAddBtn">Добавить</button><button class="secondary hidden" id="vocabCancelEditBtn">Отменить редактирование</button></div>
+        </div>
+        <div class="panel half">
+          <div class="section-title"><h3>Массовый импорт</h3></div>
+          <div class="field"><label>Добавить в группу</label><select id="vocabBulkGroup"></select></div>
+          <p class="vocab-section-note">Excel: колонки <b>Русский, Deutsch, Пример, Комментарий</b>. Или вставь список (TAB / вертикальная черта): русский перевод | немецкое выражение | пример | комментарий.</p>
+          <div class="controls" style="margin-bottom:12px"><label class="primary" style="display:inline-flex;align-items:center">Импорт Excel<input type="file" id="vocabXlsx" accept=".xlsx" hidden/></label><button class="secondary" id="vocabTsvTemplate">Шаблон TSV</button></div>
+          <div class="field"><textarea id="vocabBulk" rows="6" placeholder="Мириться с недостатками | Nachteile in Kauf nehmen | Wir müssen Nachteile in Kauf nehmen.\nСохранять общее представление | den Überblick behalten | Ich behalte den Überblick."></textarea></div>
+          <div class="controls" style="margin-top:12px"><button class="primary" id="vocabBulkBtn">Импортировать список</button></div>
+          <div class="vocab-status" id="vocabImportStatus"></div>
+        </div>
+        <div class="panel full">
+          <div class="section-title"><h3>Мои слова</h3><span class="muted" id="vocabTotal">0 слов</span></div>
+          <div class="controls" style="margin-bottom:13px"><select id="vocabFilter" class="search"></select><input id="vocabSearch" class="search" placeholder="Поиск слова или перевода"/></div>
+          <div id="vocabWordsList" class="vocab-library-list"></div>
+        </div>
+      </div>
+      <div class="study-wrap hidden" id="vocabSession">
+        <div class="panel" style="margin-bottom:12px">
+          <div class="vocab-progress"><span id="vocabSessionInfo"></span><span id="vocabSessionScore"></span></div>
+          <div class="progress"><div id="vocabSessionBar"></div></div>
+          <div class="vocab-stage-track" id="vocabSessionStages"></div>
+          <div class="prompt-label" id="vocabTaskLabel" style="text-align:center"></div>
+          <div class="vocab-question" id="vocabTaskPrompt"></div>
+          <div class="vocab-audio hidden" id="vocabAudioWrap"><button class="secondary" id="vocabPlayAudio">🔊 Прослушать ещё раз</button></div>
+          <div class="vocab-options" id="vocabOptions"></div>
+          <div class="vocab-tiles hidden" id="vocabTiles"></div>
+          <div class="vocab-built hidden" id="vocabBuilt"></div>
+          <div class="controls hidden" id="vocabBuildControls" style="justify-content:center"><button class="secondary" id="vocabClearBuild">Собрать заново</button></div>
+          <div class="hidden" id="vocabTypeWrap"><div class="field"><label>Напиши по-немецки</label><input id="vocabTyped" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Введи ответ"/></div><div class="controls" style="margin-top:12px"><button class="primary" id="vocabCheckTyped">Проверить</button></div></div>
+          <div class="vocab-result hidden" id="vocabResult"><div id="vocabVerdict"></div><div class="vocab-solution" id="vocabSolution"></div><div class="muted" id="vocabContext"></div><button class="secondary" id="vocabPlayAnswer" style="margin-top:12px">🔊 Озвучить</button></div>
+          <div class="controls" style="margin-top:16px"><button class="primary hidden" id="vocabNext">Следующее слово</button><button class="secondary" id="vocabExit">Вернуться к группам</button></div>
+        </div>
+      </div>
+      <div class="panel hidden" id="vocabDone" style="max-width:820px;margin:auto"><h3>Тренировка завершена!</h3><p id="vocabDoneMessage"></p><div class="controls"><button class="primary" id="vocabRepeat">Пройти группу ещё раз</button><button class="secondary" id="vocabBack">К группам</button></div></div>
     </section>
 
     <section id="view-cards" class="view hidden">
@@ -506,7 +602,7 @@ body:before{
   function baseState(){
     return {
       cards: starter.map(x => ({id:uid(),ru:x[0],de:x[1],model:x[2],tags:x[3],note:x[4],created:now(),groupId:null})),
-      groups:[],settings:{direction:'ru-de',studyMode:'builder',autoSpeak:true,voiceURI:'',speechRate:.88,theme:'light'},
+      groups:[],vocabGroups:[],vocabCards:[],settings:{direction:'ru-de',studyMode:'builder',autoSpeak:true,voiceURI:'',speechRate:.88,theme:'light'},
       logs:[], version:1
     };
   }
@@ -520,6 +616,7 @@ body:before{
   if(!state.cards) state.cards=[];
   function normalizeLibrary(){if(!Array.isArray(state.groups))state.groups=[];for(const c of state.cards)if(c.groupId===undefined)c.groupId=null;}
   normalizeLibrary();
+  normalizeVocab();
   let currentView='home', queue=[], qIndex=0, revealed=false, lastAction=null, editId=null, activeGroup='all', sessionGood=0;
   let builderBlocks=[], builderIndex=0, builderTargets=[0,1], builderOptionsCache={}, builderMistakes=0;
 
@@ -592,7 +689,7 @@ body:before{
     currentView=v;$$('.view').forEach(x=>x.classList.add('hidden'));$('#view-'+v).classList.remove('hidden');
     $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
     if(v==='home')renderHome();if(v==='cards')renderCards();if(v==='add')refreshGroupSelects();
-    if(v==='stats')renderStats();if(v==='settings')renderSettings();
+    if(v==='stats')renderStats();if(v==='settings')renderSettings();if(v==='vocab')renderVocab();
   }
   function shuffleList(items){
     const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;
@@ -934,6 +1031,230 @@ body:before{
     }catch(err){statusEl.textContent=`Не удалось импортировать: ${err&&err.message?err.message:'ошибка файла'}`;toast('Не удалось прочитать Excel');}
   }
   function bulkImport(){const raw=$('#bulkInput').value.trim();if(!raw)return toast('Вставь данные');let added=0;for(const line of raw.split(/\r?\n/)){if(!line.trim())continue;const sep=line.includes('\t')?'\t':'|';const p=line.split(sep).map(s=>s.trim());if(p.length<2||!p[0]||!p[1])continue;state.cards.push({id:uid(),ru:p[0],de:p[1],model:p[2]||'',tags:p[3]||'',note:p[4]||'',groupId:$('#bulkGroup').value||null,created:now()});added++;}save();$('#bulkInput').value='';renderHome();toast(`Добавлено: ${added}`);}
+  // Vocabulary: separate word groups and manually triggered, four-mode flower growth.
+  const VSTAGES=[['🌰','Семечко'],['🌱','Росток'],['🌿','Растение'],['🌷','Бутон'],['🌸','Цветок']];
+  function normalizeVocab(){
+    if(!Array.isArray(state.vocabGroups))state.vocabGroups=[];
+    if(!Array.isArray(state.vocabCards))state.vocabCards=[];
+    state.vocabCards.forEach(c=>{c.stage=Math.max(0,Math.min(4,Number(c.stage)||0));c.correct=Math.max(0,Number(c.correct)||0);c.attempts=Math.max(0,Number(c.attempts)||0);if(c.groupId===undefined)c.groupId=null;});
+  }
+  let vocabEdit=null,vocabQueue=[],vocabIndex=0,vocabCurrentMode='',vocabOptionsArr=[],vocabTilesArr=[],vocabPicked=[],vocabIsAnswered=false,vocabSuccessful=0,vocabMistakes=0,vocabChosenGroup='all',vocabIsWordPieces=false;
+  function vocabGroupName(id){return !id?'Без группы':state.vocabGroups.find(g=>g.id===id)?.name||'Без группы'}
+  function vocabGroupCount(id){return state.vocabCards.filter(c=>id==='all'||(id==='ungrouped'?!c.groupId:c.groupId===id)).length}
+  function vocabSelects(){
+    const base='<option value="">Без группы</option>'+state.vocabGroups.map(g=>'<option value="'+esc(g.id)+'">'+esc(g.name)+'</option>').join('');
+    for(const id of ['vocabAddGroup','vocabBulkGroup','vocabFilter']){
+      const el=$('#'+id),v=el.value;el.innerHTML=(id==='vocabFilter'?'<option value="all">Все группы</option>':'')+base;
+      if([...el.options].some(o=>o.value===v))el.value=v;else if(id==='vocabFilter')el.value='all';
+    }
+  }
+  function vocabStageMarkup(stage){return VSTAGES.map(([emoji,label],i)=>'<div class="vocab-stage-chip '+(i===stage?'current vocab-grown':'')+'"><span class="vocab-emoji">'+emoji+'</span><small>'+esc(label)+'</small></div>').join('')}
+  function renderVocab(){
+    normalizeVocab();vocabSelects();
+    $('#vocabLegend').innerHTML=vocabStageMarkup(-1);
+    $('#vocabGroupsList').innerHTML=[...state.vocabGroups,{id:'ungrouped',name:'Без группы',fixed:true}].map(g=>{
+      const n=vocabGroupCount(g.id),cards=state.vocabCards.filter(c=>g.id==='ungrouped'?!c.groupId:c.groupId===g.id);
+      const flowers=cards.filter(c=>c.stage===4).length;
+      return '<div class="vocab-group-tile"><strong>'+esc(g.name)+'</strong><div class="vocab-status">'+n+' слов · 🌸 '+flowers+' выращено</div><div class="controls"><button class="primary" data-vstudy="'+esc(g.id)+'" '+(!n?'disabled':'')+'>Тренировать</button><button class="secondary" data-vadd="'+esc(g.id)+'">Добавить</button>'+(g.fixed?'':'<button class="secondary" data-vrename="'+esc(g.id)+'">Имя</button><button class="secondary danger" data-vremove="'+esc(g.id)+'">Удалить</button>')+'</div></div>';
+    }).join('');
+    $$('#vocabGroupsList [data-vstudy]').forEach(b=>b.onclick=()=>startVocabSession(b.dataset.vstudy));
+    $$('#vocabGroupsList [data-vadd]').forEach(b=>b.onclick=()=>{const val=b.dataset.vadd==='ungrouped'?'':b.dataset.vadd;$('#vocabAddGroup').value=val;$('#vocabBulkGroup').value=val;$('#vocabRu').focus();});
+    $$('#vocabGroupsList [data-vrename]').forEach(b=>b.onclick=()=>renameVocabGroup(b.dataset.vrename));
+    $$('#vocabGroupsList [data-vremove]').forEach(b=>b.onclick=()=>deleteVocabGroup(b.dataset.vremove));
+    $('#vocabTotal').textContent=state.vocabCards.length+' слов';
+    renderVocabList();
+  }
+  function createVocabGroup(){
+    const name=$('#vocabNewGroup').value.trim();if(!name)return toast('Введи название группы');
+    if(state.vocabGroups.some(g=>g.name.toLowerCase()===name.toLowerCase()))return toast('Такая группа уже есть');
+    const g={id:uid(),name:name.slice(0,100)};state.vocabGroups.push(g);save();$('#vocabNewGroup').value='';renderVocab();
+    $('#vocabAddGroup').value=g.id;$('#vocabBulkGroup').value=g.id;toast('Группа создана');
+  }
+  function renameVocabGroup(id){
+    const g=state.vocabGroups.find(x=>x.id===id);if(!g)return;
+    const s=prompt('Новое название группы',g.name);if(s===null)return;const name=s.trim();if(!name)return toast('Пустое название');
+    if(state.vocabGroups.some(x=>x.id!==id&&x.name.toLowerCase()===name.toLowerCase()))return toast('Название уже занято');
+    g.name=name.slice(0,100);save();renderVocab();
+  }
+  function deleteVocabGroup(id){
+    const g=state.vocabGroups.find(x=>x.id===id);if(!g)return;
+    if(!confirm('Удалить группу «'+g.name+'»? Слова останутся в «Без группы».'))return;
+    state.vocabGroups=state.vocabGroups.filter(x=>x.id!==id);state.vocabCards.forEach(c=>{if(c.groupId===id)c.groupId=null;});save();renderVocab();
+  }
+  function vocabSame(ru,de,groupId,exceptId){return state.vocabCards.some(c=>c.id!==exceptId&&c.ru.trim().toLowerCase()===ru.trim().toLowerCase()&&c.de.trim().toLowerCase()===de.trim().toLowerCase()&&c.groupId===(groupId||null))}
+  function vocabNewCard(ru,de,example,note,groupId){return {id:uid(),ru:ru.trim(),de:de.trim(),example:example.trim(),note:note.trim(),groupId:groupId||null,stage:0,correct:0,attempts:0,created:now()}}
+  function saveVocabCard(){
+    const ru=$('#vocabRu').value.trim(),de=$('#vocabDe').value.trim(),example=$('#vocabExample').value.trim(),note=$('#vocabNote').value.trim(),groupId=$('#vocabAddGroup').value||null;
+    if(!ru||!de)return toast('Нужны русский и немецкий тексты');
+    if(vocabSame(ru,de,groupId,vocabEdit))return toast('Такое выражение уже есть в этой группе');
+    if(vocabEdit){const c=state.vocabCards.find(x=>x.id===vocabEdit);if(c){Object.assign(c,{ru,de,example,note,groupId});}toast('Слово сохранено');}
+    else{state.vocabCards.push(vocabNewCard(ru,de,example,note,groupId));toast('Слово добавлено');}
+    vocabEdit=null;for(const id of ['vocabRu','vocabDe','vocabExample','vocabNote'])$('#'+id).value='';
+    $('#vocabAddBtn').textContent='Добавить';$('#vocabCancelEditBtn').classList.add('hidden');save();renderVocab();
+  }
+  function editVocabCard(id){
+    const c=state.vocabCards.find(x=>x.id===id);if(!c)return;vocabEdit=id;
+    $('#vocabRu').value=c.ru;$('#vocabDe').value=c.de;$('#vocabExample').value=c.example||'';$('#vocabNote').value=c.note||'';
+    $('#vocabAddGroup').value=c.groupId||'';$('#vocabAddBtn').textContent='Сохранить';$('#vocabCancelEditBtn').classList.remove('hidden');$('#vocabRu').focus();
+  }
+  function cancelVocabEdit(){vocabEdit=null;['vocabRu','vocabDe','vocabExample','vocabNote'].forEach(id=>$('#'+id).value='');$('#vocabAddBtn').textContent='Добавить';$('#vocabCancelEditBtn').classList.add('hidden')}
+  function deleteVocabCard(id){const c=state.vocabCards.find(x=>x.id===id);if(!c)return;if(!confirm('Удалить слово «'+c.de+'»?'))return;state.vocabCards=state.vocabCards.filter(x=>x.id!==id);save();renderVocab()}
+  function resetVocabStage(id){const c=state.vocabCards.find(x=>x.id===id);if(!c)return;if(!confirm('Вернуть слово «'+c.de+'» к стадии «Семечко»?'))return;c.stage=0;save();renderVocab()}
+  function renderVocabList(){
+    const selected=$('#vocabFilter').value,q=$('#vocabSearch').value.trim().toLowerCase();
+    const cards=state.vocabCards.filter(c=>(selected==='all'||(selected===''?!c.groupId:c.groupId===selected))&&(!q||[c.ru,c.de,c.example,c.note,vocabGroupName(c.groupId)].join(' ').toLowerCase().includes(q)));
+    $('#vocabWordsList').innerHTML=cards.length?cards.map(c=>'<div class="vocab-row"><div><div class="vocab-de">'+esc(c.de)+'　'+VSTAGES[c.stage][0]+'</div><div class="vocab-ru">'+esc(c.ru)+' · '+esc(vocabGroupName(c.groupId))+' · '+esc(VSTAGES[c.stage][1])+'</div></div><div class="controls"><button class="secondary" data-vedit="'+esc(c.id)+'">Править</button><button class="secondary" data-vreset="'+esc(c.id)+'">Сброс роста</button><button class="secondary danger" data-vdel="'+esc(c.id)+'">×</button></div></div>').join(''):'<div class="group-empty">Слов пока нет — добавь первое выражение или импортируй список.</div>';
+    $$('#vocabWordsList [data-vedit]').forEach(b=>b.onclick=()=>editVocabCard(b.dataset.vedit));
+    $$('#vocabWordsList [data-vreset]').forEach(b=>b.onclick=()=>resetVocabStage(b.dataset.vreset));
+    $$('#vocabWordsList [data-vdel]').forEach(b=>b.onclick=()=>deleteVocabCard(b.dataset.vdel));
+  }
+  function addVocabRows(rows,groupId){
+    let added=0,skipped=0;
+    for(const r of rows){const [ru,de,example='',note='']=r.map(x=>String(x??'').trim());if(!ru||!de){skipped++;continue;}if(vocabSame(ru,de,groupId,null)){skipped++;continue;}state.vocabCards.push(vocabNewCard(ru,de,example,note,groupId));added++;}
+    save();renderVocab();$('#vocabImportStatus').textContent='Добавлено: '+added+' · пропущено: '+skipped;toast('Добавлено слов: '+added);
+  }
+  function bulkVocabImport(){
+    const text=$('#vocabBulk').value.trim();if(!text)return toast('Вставь слова для импорта');
+    const rows=text.split(/\r?\n/).filter(x=>x.trim()).map(line=>line.split(line.includes('\t')?'\t':'|'));
+    const groupId=$('#vocabBulkGroup').value||null;addVocabRows(rows,groupId);$('#vocabBulk').value='';
+  }
+  async function vocabXlsxImport(f){
+    $('#vocabImportStatus').textContent='Читаю Excel…';
+    try{
+      const rows=(await readXlsxRows(f)).filter(r=>r.some(x=>String(x??'').trim()));
+      if(!rows.length)throw Error('Файл пуст');
+      const hdr=(rows[0]||[]).map(x=>String(x||'').trim().toLowerCase());
+      const col=(terms,defaultIndex)=>{const i=hdr.findIndex(x=>terms.some(t=>x===t||x.includes(t)));return i>=0?i:defaultIndex;};
+      const hasHdr=hdr.some(x=>['русский','deutsch','немецкий','russian'].includes(x));
+      const indices=hasHdr?[col(['русский','russian','перевод'],0),col(['deutsch','немецкий','german'],1),col(['пример','example','beispiel'],2),col(['комментарий','note','anmerkung'],3)]:[0,1,2,3];
+      addVocabRows(rows.slice(hasHdr?1:0).map(r=>indices.map(i=>r[i]||'')),$('#vocabBulkGroup').value||null);
+    }catch(err){$('#vocabImportStatus').textContent='Ошибка импорта: '+String(err?.message||err);toast('Не удалось прочитать Excel');}
+  }
+  function vocabRandomize(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+  function vocabNormalize(s){return String(s||'').normalize('NFC').trim().toLocaleLowerCase('de-DE').replace(/[.!?;:]+$/,'').replace(/\s+/g,' ');}
+  function vocabChoices(c,property){
+    const correct=c[property];const other=[...new Set(state.vocabCards.filter(x=>x.id!==c.id).map(x=>x[property]).filter(v=>vocabNormalize(v)!==vocabNormalize(correct)))];
+    if(other.length<3)return null;
+    return vocabRandomize([correct,...vocabRandomize(other).slice(0,3)]);
+  }
+  function vocabModeForStage(c){
+    const mode=['choose','listen','tap','type'][c.stage]||vocabRandomize(['choose','listen','tap','type'])[0];
+    if((mode==='choose'&&!vocabChoices(c,'de'))||(mode==='listen'&&!vocabChoices(c,'ru')))return 'type';
+    return mode;
+  }
+  function startVocabSession(groupId){
+    vocabChosenGroup=groupId;
+    vocabQueue=vocabRandomize(state.vocabCards.filter(c=>groupId==='all'||(groupId==='ungrouped'?!c.groupId:c.groupId===groupId)).map(c=>c.id));
+    if(!vocabQueue.length)return toast('В этой группе пока нет слов');
+    vocabIndex=0;vocabSuccessful=0;vocabMistakes=0;
+    $('#vocabLibrary').classList.add('hidden');$('#vocabDone').classList.add('hidden');$('#vocabSession').classList.remove('hidden');
+    showVocabQuestion();
+  }
+  function vocabTileTokens(word){
+    if(/\s/.test(word.trim())){vocabIsWordPieces=true;return word.trim().split(/\s+/);}
+    vocabIsWordPieces=false;const chars=Array.from(word.trim());
+    if(chars.length<=5)return chars;
+    const tokens=[];for(let i=0;i<chars.length;i+=3)tokens.push(chars.slice(i,i+3).join(''));return tokens;
+  }
+  function renderVocabTiles(){
+    const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);
+    const tokens=vocabTileTokens(c.de);vocabTilesArr=vocabRandomize(tokens.map((text,id)=>({text,id})));vocabPicked=[];
+    vocabDrawTiles();
+  }
+  function vocabDrawTiles(){
+    $('#vocabTiles').innerHTML=vocabTilesArr.map((t,i)=>'<button type="button" class="secondary" data-vtile="'+i+'" '+(vocabPicked.includes(i)?'disabled':'')+'>'+esc(t.text)+'</button>').join('');
+    $$('#vocabTiles [data-vtile]').forEach(b=>b.onclick=()=>vocabTap(Number(b.dataset.vtile)));
+    const pieces=vocabPicked.map(i=>vocabTilesArr[i].text);
+    $('#vocabBuilt').textContent=pieces.join(vocabIsWordPieces?' ':'');
+  }
+  function vocabTap(i){
+    if(vocabIsAnswered||vocabPicked.includes(i))return;
+    vocabPicked.push(i);vocabDrawTiles();
+    if(vocabPicked.length===vocabTilesArr.length){
+      const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);
+      const entered=vocabPicked.map(n=>vocabTilesArr[n].text).join(vocabIsWordPieces?' ':'');
+      vocabRespond(vocabNormalize(entered)===vocabNormalize(c.de));
+    }
+  }
+  function showVocabQuestion(){
+    if(vocabIndex>=vocabQueue.length){endVocabSession();return;}
+    const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);
+    if(!c){vocabIndex++;showVocabQuestion();return;}
+    vocabIsAnswered=false;vocabCurrentMode=vocabModeForStage(c);
+    $('#vocabSessionInfo').textContent='Слово '+(vocabIndex+1)+' / '+vocabQueue.length+' · '+vocabGroupName(c.groupId);
+    $('#vocabSessionScore').textContent=vocabSuccessful+' верно · '+vocabMistakes+' ошибок';
+    $('#vocabSessionBar').style.width=Math.round(100*vocabIndex/vocabQueue.length)+'%';
+    $('#vocabSessionStages').innerHTML=vocabStageMarkup(c.stage);
+    $('#vocabOptions').innerHTML='';$('#vocabTaskPrompt').textContent='';
+    for(const id of ['vocabOptions','vocabAudioWrap','vocabTiles','vocabBuilt','vocabBuildControls','vocabTypeWrap','vocabResult','vocabNext'])$('#'+id).classList.add('hidden');
+    $('#vocabTyped').value='';
+    const labels={choose:'Выбери правильный немецкий перевод',listen:'Послушай и выбери русский перевод',tap:'Собери немецкое слово или выражение',type:'Напиши немецкий перевод без подсказки'};
+    $('#vocabTaskLabel').textContent=labels[vocabCurrentMode];
+    if(vocabCurrentMode==='choose'){
+      $('#vocabTaskPrompt').textContent=c.ru;vocabOptionsArr=vocabChoices(c,'de');
+      $('#vocabOptions').classList.remove('hidden');
+      $('#vocabOptions').innerHTML=vocabOptionsArr.map((v,i)=>'<button class="secondary" data-voption="'+i+'">'+esc(v)+'</button>').join('');
+      $$('#vocabOptions [data-voption]').forEach(b=>b.onclick=()=>vocabRespond(vocabOptionsArr[Number(b.dataset.voption)]===c.de));
+    }else if(vocabCurrentMode==='listen'){
+      $('#vocabTaskPrompt').textContent='🔊';$('#vocabAudioWrap').classList.remove('hidden');vocabOptionsArr=vocabChoices(c,'ru');
+      $('#vocabOptions').classList.remove('hidden');
+      $('#vocabOptions').innerHTML=vocabOptionsArr.map((v,i)=>'<button class="secondary" data-voption="'+i+'">'+esc(v)+'</button>').join('');
+      $$('#vocabOptions [data-voption]').forEach(b=>b.onclick=()=>vocabRespond(vocabOptionsArr[Number(b.dataset.voption)]===c.ru));
+      speak(c.de);
+    }else if(vocabCurrentMode==='tap'){
+      $('#vocabTaskPrompt').textContent=c.ru;
+      for(const id of ['vocabTiles','vocabBuilt','vocabBuildControls'])$('#'+id).classList.remove('hidden');
+      renderVocabTiles();
+    }else{
+      $('#vocabTaskPrompt').textContent=c.ru;$('#vocabTypeWrap').classList.remove('hidden');$('#vocabTyped').focus();
+    }
+  }
+  function vocabRespond(correct){
+    if(vocabIsAnswered)return;vocabIsAnswered=true;
+    const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);if(!c)return;
+    c.attempts++;if(correct){c.correct++;vocabSuccessful++;c.stage=Math.min(4,c.stage+1);}else vocabMistakes++;
+    save();
+    $('#vocabOptions').classList.add('hidden');$('#vocabBuildControls').classList.add('hidden');$('#vocabTiles').classList.add('hidden');$('#vocabTypeWrap').classList.add('hidden');
+    $('#vocabResult').classList.remove('hidden');$('#vocabNext').classList.remove('hidden');
+    $('#vocabVerdict').className=correct?'vocab-correct':'vocab-incorrect';
+    $('#vocabVerdict').textContent=correct?'✓ Верно! '+VSTAGES[c.stage][0]+' '+VSTAGES[c.stage][1]:'× Не получилось. Стадия слова пока не меняется.';
+    $('#vocabSolution').textContent=c.de;$('#vocabContext').textContent=[c.example,c.note].filter(Boolean).join(' · ');
+    $('#vocabSessionStages').innerHTML=vocabStageMarkup(c.stage);
+    $('#vocabNext').textContent=vocabIndex===vocabQueue.length-1?'Закончить':'Следующее слово';
+  }
+  function checkVocabTyped(){
+    if(vocabIsAnswered)return;
+    const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);if(!c)return;
+    const ans=$('#vocabTyped').value.trim();if(!ans)return toast('Сначала напиши ответ');
+    vocabRespond(vocabNormalize(ans)===vocabNormalize(c.de));
+  }
+  function nextVocabQuestion(){vocabIndex++;showVocabQuestion();}
+  function endVocabSession(){
+    $('#vocabSession').classList.add('hidden');$('#vocabDone').classList.remove('hidden');
+    $('#vocabDoneMessage').textContent='Проверено слов: '+vocabQueue.length+'. Правильных ответов: '+vocabSuccessful+'. Ошибок: '+vocabMistakes+'. Группу можно повторить в любое время.';
+  }
+  function exitVocabSession(){
+    $('#vocabSession').classList.add('hidden');$('#vocabDone').classList.add('hidden');$('#vocabLibrary').classList.remove('hidden');renderVocab();
+  }
+  function setupVocab(){
+    $('#vocabCreateGroup').onclick=createVocabGroup;
+    $('#vocabNewGroup').onkeydown=e=>{if(e.key==='Enter')createVocabGroup();};
+    $('#vocabAddBtn').onclick=saveVocabCard;$('#vocabCancelEditBtn').onclick=cancelVocabEdit;
+    $('#vocabBulkBtn').onclick=bulkVocabImport;
+    $('#vocabXlsx').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(f)await vocabXlsxImport(f);e.target.value='';};
+    $('#vocabTsvTemplate').onclick=()=>download('rektion-vokabular-template.tsv','Русский\tDeutsch\tПример\tКомментарий\nМириться с недостатками\tNachteile in Kauf nehmen\tWir müssen Nachteile in Kauf nehmen.\tetwas in Kauf nehmen\n','text/tab-separated-values;charset=utf-8');
+    $('#vocabFilter').onchange=renderVocabList;$('#vocabSearch').oninput=renderVocabList;
+    $('#vocabPlayAudio').onclick=()=>{const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);if(c)speak(c.de);};
+    $('#vocabPlayAnswer').onclick=()=>{const c=state.vocabCards.find(x=>x.id===vocabQueue[vocabIndex]);if(c)speak(c.de);};
+    $('#vocabCheckTyped').onclick=checkVocabTyped;
+    $('#vocabTyped').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();checkVocabTyped();}};
+    $('#vocabClearBuild').onclick=()=>{vocabPicked=[];vocabDrawTiles();};
+    $('#vocabNext').onclick=nextVocabQuestion;
+    $('#vocabExit').onclick=exitVocabSession;
+    $('#vocabBack').onclick=exitVocabSession;
+    $('#vocabRepeat').onclick=()=>startVocabSession(vocabChosenGroup);
+  }
+
   function renderStats(){
     const start=new Date();start.setHours(0,0,0,0);const days=[];
     for(let i=13;i>=0;i--){const d=new Date(start);d.setDate(d.getDate()-i);days.push(todayKey(d.getTime()));}
@@ -966,13 +1287,14 @@ body:before{
   $('#searchInput').oninput=renderCards;$('#groupFilter').onchange=renderCards;$('#moveFilteredBtn').onclick=moveFilteredCards;$('#addOneBtn').onclick=addOne;$('#cancelEditBtn').onclick=clearForm;$('#bulkBtn').onclick=bulkImport;$('#downloadTemplateBtn').onclick=templateCsv;
   $('#xlsxFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(f)await importXlsxFile(f);e.target.value='';};
   $('#saveSettingsBtn').onclick=saveSettings;$('#testVoiceBtn').onclick=testSelectedVoice;$('#exportBtn').onclick=exportJson;$('#resetStatsBtn').onclick=resetStats;$('#resetAllBtn').onclick=resetAll;
-  $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.cards||!s.settings)throw 0;state=s;normalizeLibrary();save();applyTheme();renderHome();toast('Резервная копия импортирована')}catch{toast('Не удалось прочитать файл')}e.target.value='';};
+  $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.cards||!s.settings)throw 0;state=s;normalizeLibrary();normalizeVocab();save();applyTheme();renderHome();toast('Резервная копия импортирована')}catch{toast('Не удалось прочитать файл')}e.target.value='';};
   $('#themeBtn').onclick=()=>{state.settings.theme=(state.settings.theme==='dark'?'light':'dark');save();applyTheme();};
   document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.code==='Space'&&currentView==='study'&&(state.settings.studyMode||'builder')!=='builder'){e.preventDefault();reveal()}if(currentView==='study'&&revealed&&['1','2','3','4'].includes(e.key)){grade({1:'again',2:'hard',3:'good',4:'easy'}[e.key])}if(e.key.toLowerCase()==='z'&&currentView==='study')undo();});
   if('speechSynthesis' in window){
     speechSynthesis.onvoiceschanged=()=>{if(currentView==='settings')populateVoiceSelect();};
     setTimeout(()=>speechSynthesis.getVoices(),50);
   }
+  setupVocab();
   applyTheme(); renderHome();
 })();
 </script>
