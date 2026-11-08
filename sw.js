@@ -1,4 +1,4 @@
-const CACHE = 'rektion-vocab-rounds-v3';
+const CACHE = 'rektion-vocab-five-words-v4';
 const APP_SHELL = [
   './',
   './index.html',
