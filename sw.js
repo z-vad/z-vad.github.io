@@ -1,4 +1,4 @@
-const CACHE = 'rektion-pwa-v6-voice';
+const CACHE = 'rektion-groups-v1';
 const APP_SHELL = [
   './',
   './index.html',

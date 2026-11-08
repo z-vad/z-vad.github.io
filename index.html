@@ -274,16 +274,25 @@ body:before{
   html,body{background-size:100% 100%}
 }
 
+
+/* Режим без интервалов — группы пользователя */
+.my-groups{display:flex;flex-direction:column;gap:12px}
+.my-group{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.my-group .controls{gap:6px}.my-group .controls button{padding:9px 12px}
+.my-group b{font-size:18px}.group-stats{display:flex;gap:22px;flex-wrap:wrap;margin:16px 0}
+.group-stats b{font-size:25px;display:block}.group-stats small{color:var(--muted)}
+.group-picker{min-width:175px;max-width:310px}
+@media(max-width:700px){.my-group .controls{width:100%}.my-group .controls button{flex:1}}
 </style>
 </head>
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="brand"><div class="logo">R</div><div><h1>Rektion</h1><small>интервальные повторения · Deutsch</small></div></div>
+    <div class="brand"><div class="logo">R</div><div><h1>Rektion</h1><small>Deutsch · группы</small></div></div>
     <div class="top-actions"><button id="themeBtn" class="iconbtn" title="Тема">◐</button></div>
   </header>
   <nav class="nav" id="nav">
-    <button data-view="home" class="active">Сегодня</button>
+    <button data-view="home" class="active">Группы</button>
     <button data-view="study">Учить</button>
     <button data-view="cards">Карточки</button>
     <button data-view="add">Добавить</button>
@@ -292,32 +301,23 @@ body:before{
   </nav>
 
   <main>
+
     <section id="view-home" class="view">
       <div class="grid">
         <div class="panel hero">
-          <span class="tag">● Немецкое управление</span>
-          <h2>Не узнавай конструкцию. Вспоминай её сам.</h2>
-          <p>Собирай немецкое предложение по частям. Два столбца чередуются: в каждом четыре варианта, но только один продолжает предложение правильно. После сборки оцени, насколько легко оно далось.</p>
-          <div class="controls"><button class="primary" id="startBtn">Начать повторение</button><button class="secondary" data-jump="add">Добавить карточки</button></div>
-          <div class="stats">
-            <div class="stat"><b id="sDue">0</b><span>к повторению</span></div>
-            <div class="stat"><b id="sNew">0</b><span>новых сегодня</span></div>
-            <div class="stat"><b id="sKnown">0</b><span>закреплено</span></div>
-            <div class="stat"><b id="sTotal">0</b><span>всего карточек</span></div>
-          </div>
+          <span class="tag">● Личная библиотека немецкого</span>
+          <h2>Создавай группы и тренируй предложения когда захочешь.</h2>
+          <p>Наш конструктор, карточки, озвучка и импорт сохранены. Все карточки группы можно повторять в любой день без расписания.</p>
+          <div class="group-stats"><div><b id="sTotal">0</b><small>карточек</small></div><div><b id="sGroups">0</b><small>групп</small></div><div><b id="sAnswers">0</b><small>ответов</small></div></div>
+          <div class="controls"><button class="primary" id="startBtn">Тренировать всё</button><button class="secondary" data-jump="add">Добавить предложения</button></div>
         </div>
         <div class="panel side">
-          <div class="section-title"><h3>Сегодня</h3><span class="muted" id="todayLabel"></span></div>
-          <div class="list">
-            <div class="row" style="grid-template-columns:1fr auto"><div><b>Повторы</b><div class="muted" style="font-size:13px">сначала просроченные</div></div><span class="pill due" id="todayDue">0</span></div>
-            <div class="row" style="grid-template-columns:1fr auto"><div><b>Новые</b><div class="muted" style="font-size:13px">лимит на день</div></div><span class="pill new" id="todayNew">0</span></div>
-            <div class="row" style="grid-template-columns:1fr auto"><div><b>Серия</b><div class="muted" style="font-size:13px">дней с ответами</div></div><span class="pill known" id="streak">0 дн.</span></div>
-          </div>
+          <div class="section-title"><h3>Создать группу</h3></div>
+          <div class="field"><label>Название группы</label><input id="newGroupName" maxlength="100" placeholder="Aspekte C1 — Kapitel 3" /></div>
+          <div class="controls" style="margin-top:12px"><button class="primary" id="createGroupBtn">Создать</button></div>
+          <p class="help" style="margin-top:10px">Названия и число групп выбираешь сам. Удаление группы не удаляет предложения.</p>
         </div>
-        <div class="panel full">
-          <div class="section-title"><h3>Как отвечать</h3></div>
-          <div class="help">В режиме <b>«Конструктор»</b> выбирай правильный блок сначала в левом, затем в правом столбце — и так по очереди. После полной сборки: <b>1</b> — забыл · <b>2</b> — трудно · <b>3</b> — знаю · <b>4</b> — легко · <b>Z</b> — отменить последний ответ. Прогресс сохраняется автоматически.</div>
-        </div>
+        <div class="panel full"><div class="section-title"><h3>Мои группы</h3><span class="muted" id="groupCountLabel"></span></div><div id="groupList" class="my-groups"></div></div>
       </div>
     </section>
 
@@ -352,21 +352,21 @@ body:before{
           <div>
             <div class="card-actions" id="revealActions"><button class="primary" id="revealBtn">Показать ответ <span class="kbd">Space</span></button></div>
             <div class="card-actions hidden" id="rateActions">
-              <button class="rate again" data-grade="again"><b>Забыл · 1</b><small id="againInt">10 мин</small></button>
-              <button class="rate hard" data-grade="hard"><b>Трудно · 2</b><small id="hardInt">1 день</small></button>
-              <button class="rate good" data-grade="good"><b>Знаю · 3</b><small id="goodInt">2 дня</small></button>
-              <button class="rate easy" data-grade="easy"><b>Легко · 4</b><small id="easyInt">4 дня</small></button>
+              <button class="rate again" data-grade="again"><b>Забыл · 1</b></button>
+              <button class="rate hard" data-grade="hard"><b>Трудно · 2</b></button>
+              <button class="rate good" data-grade="good"><b>Знаю · 3</b></button>
+              <button class="rate easy" data-grade="easy"><b>Легко · 4</b></button>
             </div>
           </div>
         </div>
-        <div id="studyDone" class="panel empty hidden"><h3>На сегодня всё</h3><p>Очередь закончилась. Расписание следующих повторений уже сохранено.</p><button class="secondary" id="extraBtn">Ещё круг без изменения расписания</button></div>
+        <div id="studyDone" class="panel empty hidden"><h3>Группа пройдена</h3><p id="studyDoneSummary">Все предложения пройдены.</p><div class="controls" style="justify-content:center"><button class="primary" id="extraBtn">Пройти ещё раз</button><button class="secondary" data-jump="home">К группам</button></div></div>
       </div>
     </section>
 
     <section id="view-cards" class="view hidden">
       <div class="panel">
-        <div class="section-title"><h3>Карточки</h3><div class="controls"><input id="searchInput" class="search" placeholder="Поиск по глаголу, предложению или тегу" /></div></div>
-        <div class="help" style="margin-bottom:12px">Статус «закреплено» — интервал 21 день и больше. Клик по карточке открывает редактирование.</div>
+        <div class="section-title"><h3>Карточки</h3><div class="controls"><select id="groupFilter" class="search group-picker"><option value="all">Все группы</option></select><input id="searchInput" class="search" placeholder="Поиск по глаголу, предложению или тегу" /></div></div>
+        <div class="help" style="margin-bottom:12px">Нажми на предложение, чтобы отредактировать его или сменить группу. Можно перенести сразу все показанные предложения.</div><div class="controls" style="margin-bottom:12px"><select id="moveDest" class="search group-picker"><option value="">Без группы</option></select><button class="secondary" id="moveFilteredBtn">Перенести показанные</button></div>
         <div id="cardsList" class="list"></div>
       </div>
     </section>
@@ -376,6 +376,7 @@ body:before{
         <div class="panel half">
           <div class="section-title"><h3>Одна карточка</h3></div>
           <div class="formgrid">
+            <div class="field span2"><label>Группа</label><select id="fGroup"><option value="">Без группы</option></select></div>
             <div class="field span2"><label>Русское предложение</label><textarea id="fRu" style="min-height:90px" placeholder="Я подаю заявление на визу."></textarea></div>
             <div class="field span2"><label>Немецкое предложение</label><textarea id="fDe" style="min-height:90px" placeholder="Ich beantrage ein Visum."></textarea></div>
             <div class="field"><label>Глагол / модель</label><input id="fModel" placeholder="beantragen + A" /></div>
@@ -385,7 +386,7 @@ body:before{
           <div class="controls" style="margin-top:14px"><button class="primary" id="addOneBtn">Добавить</button><button class="secondary hidden" id="cancelEditBtn">Отменить редактирование</button></div>
         </div>
         <div class="panel half">
-          <div class="section-title"><h3>Импорт пачкой</h3></div>
+          <div class="section-title"><h3>Импорт пачкой</h3></div><div class="field span2" style="margin-bottom:13px"><label>Добавить все предложения в группу</label><select id="bulkGroup"><option value="">Без группы</option></select></div>
           <div class="help" style="margin-bottom:10px"><b>Excel:</b> первая строка — заголовки <code>Русский</code>, <code>Deutsch</code>, <code>Модель</code>, <code>Теги</code>, <code>Комментарий</code>. Обязательны только первые две колонки. Поддерживается обычный файл <code>.xlsx</code>.</div>
           <div class="controls" style="margin-bottom:10px">
             <label class="primary" style="display:inline-flex;align-items:center">Импортировать Excel<input id="xlsxFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden /></label>
@@ -400,49 +401,36 @@ body:before{
       </div>
     </section>
 
-    <section id="view-stats" class="view hidden">
-      <div class="grid">
-        <div class="panel full"><div class="section-title"><h3>Последние 14 дней</h3><span class="muted" id="reviewTotal">0 ответов</span></div><div class="bar-chart" id="barChart"></div><div class="barlabel" id="barLabels"></div></div>
-        <div class="panel half"><div class="section-title"><h3>Состояние колоды</h3></div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b id="stNew">0</b><span>не начато</span></div><div class="stat"><b id="stLearning">0</b><span>в обучении</span></div><div class="stat"><b id="stMature">0</b><span>закреплено</span></div><div class="stat"><b id="stLapses">0</b><span>забываний</span></div></div></div>
-        <div class="panel half"><div class="section-title"><h3>Ответы</h3></div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b id="stAgain">0</b><span>забыл</span></div><div class="stat"><b id="stHard">0</b><span>трудно</span></div><div class="stat"><b id="stGood">0</b><span>знаю</span></div><div class="stat"><b id="stEasy">0</b><span>легко</span></div></div></div>
-      </div>
-    </section>
 
-    <section id="view-settings" class="view hidden">
-      <div class="grid">
-        <div class="panel half">
-          <div class="section-title"><h3>Тренировка</h3></div>
-          <div class="formgrid">
-            <div class="field"><label>Новых карточек в день</label><input id="setNewLimit" type="number" min="0" max="200" /></div>
-            <div class="field"><label>Максимум повторений (0 = без лимита)</label><input id="setReviewLimit" type="number" min="0" max="1000" /></div>
-            <div class="field span2"><label>Режим занятия</label><select id="setStudyMode"><option value="builder">Конструктор слов: 2 × 4 варианта</option><option value="flip">Обычная карточка с показом ответа</option></select></div>
-            <div class="field span2"><label>Направление обычных карточек</label><select id="setDirection"><option value="ru-de">Русский → немецкий (активное воспроизведение)</option><option value="de-ru">Немецкий → русский (понимание)</option><option value="mixed">Смешанное</option></select></div>
-            <div class="field span2"><label><input id="setAutoSpeak" type="checkbox" /> Автоматически озвучивать немецкое предложение после сборки / открытия ответа</label></div>
-            <div class="field span2"><label>Немецкий голос</label><select id="setVoice"><option value="">Автоматически — системный немецкий голос</option></select></div>
-            <div class="field"><label>Темп озвучки</label><select id="setSpeechRate"><option value="0.82">0,82 — медленно</option><option value="0.88">0,88 — естественно</option><option value="0.92">0,92 — чуть быстрее</option><option value="1">1,00 — обычный</option></select></div>
-            <div class="field"><label>&nbsp;</label><button class="secondary" id="testVoiceBtn" type="button">Прослушать голос</button></div>
-            <div class="field span2"><div class="help" id="voiceHelp">Показываются немецкие голоса, которые iOS разрешает использовать в Safari/Rektion. Улучшенный голос сначала нужно скачать в настройках iPhone.</div></div>
-          </div>
-          <div class="controls" style="margin-top:14px"><button class="primary" id="saveSettingsBtn">Сохранить</button></div>
-        </div>
-        <div class="panel half">
-          <div class="section-title"><h3>Данные</h3></div>
-          <p class="help">Все данные хранятся только в этом браузере через localStorage. Сделай резервную копию, если собираешься чистить браузер или переносить тренажёр на другой компьютер.</p>
-          <div class="controls"><button class="secondary" id="exportBtn">Экспорт JSON</button><label class="secondary" style="display:inline-flex;align-items:center">Импорт JSON<input id="importFile" type="file" accept="application/json" hidden /></label><button class="secondary" id="resetScheduleBtn">Сбросить только расписание</button><button class="secondary danger" id="resetAllBtn">Удалить всё</button></div>
-        </div>
-        <div class="panel full">
-          <div class="section-title"><h3>Алгоритм</h3></div>
-          <p class="help">Используется прозрачная схема, близкая по духу к SM-2: «забыл» возвращает карточку через 10 минут и уменьшает лёгкость; «трудно» даёт короткий интервал; «знаю» умножает текущий интервал примерно на коэффициент лёгкости; «легко» — сильнее. После каждого ответа расписание хранится локально. Это не копия алгоритма исходного сайта и не FSRS.</p>
-        </div>
+    <section id="view-stats" class="view hidden"><div class="grid">
+      <div class="panel full"><div class="section-title"><h3>Последние 14 дней</h3><span class="muted" id="reviewTotal">0 ответов</span></div><div class="bar-chart" id="barChart"></div><div class="barlabel" id="barLabels"></div></div>
+      <div class="panel half"><div class="section-title"><h3>Библиотека</h3></div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b id="stCards">0</b><span>предложений</span></div><div class="stat"><b id="stGroups">0</b><span>групп</span></div></div></div>
+      <div class="panel half"><div class="section-title"><h3>Оценки ответов</h3></div><div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b id="stAgain">0</b><span>забыл</span></div><div class="stat"><b id="stHard">0</b><span>трудно</span></div><div class="stat"><b id="stGood">0</b><span>знаю</span></div><div class="stat"><b id="stEasy">0</b><span>легко</span></div></div></div>
+    </div></section>
+
+
+    <section id="view-settings" class="view hidden"><div class="grid">
+      <div class="panel half"><div class="section-title"><h3>Тренировка</h3></div><div class="formgrid">
+        <div class="field span2"><label>Режим занятия</label><select id="setStudyMode"><option value="builder">Конструктор слов: 2 × 4 варианта</option><option value="flip">Обычная карточка с показом ответа</option></select></div>
+        <div class="field span2"><label>Направление обычных карточек</label><select id="setDirection"><option value="ru-de">Русский → немецкий</option><option value="de-ru">Немецкий → русский</option><option value="mixed">Смешанное</option></select></div>
+        <div class="field span2"><label><input id="setAutoSpeak" type="checkbox" /> Автоматически озвучивать немецкий ответ</label></div>
+        <div class="field span2"><label>Немецкий голос</label><select id="setVoice"><option value="">Системный немецкий голос</option></select></div>
+        <div class="field"><label>Темп озвучки</label><select id="setSpeechRate"><option value="0.82">0,82 — медленно</option><option value="0.88">0,88 — естественно</option><option value="0.92">0,92 — чуть быстрее</option><option value="1">1,00 — обычный</option></select></div>
+        <div class="field"><label>&nbsp;</label><button class="secondary" id="testVoiceBtn" type="button">Прослушать голос</button></div>
+        <div class="field span2"><div class="help" id="voiceHelp"></div></div>
+      </div><div class="controls" style="margin-top:14px"><button class="primary" id="saveSettingsBtn">Сохранить</button></div></div>
+      <div class="panel half"><div class="section-title"><h3>Данные</h3></div>
+        <p class="help">Карточки и группы хранятся в браузере. Перед очисткой браузера сохрани резервную копию JSON.</p>
+        <div class="controls"><button class="secondary" id="exportBtn">Экспорт JSON</button><label class="secondary" style="display:inline-flex;align-items:center">Импорт JSON<input id="importFile" type="file" accept="application/json" hidden /></label><button class="secondary" id="resetStatsBtn">Сбросить оценки</button><button class="secondary danger" id="resetAllBtn">Удалить всё</button></div>
       </div>
-    </section>
+      <div class="panel full"><h3>Без расписания</h3><p class="help">Нет обязательных повторений и ограничений на новые карточки. Открывай любую свою группу в любое время.</p></div>
+    </div></section>
   </main>
 </div>
 <div class="toast" id="toast"></div>
 <script src="jszip.min.js"></script>
 <script>
 (() => {
-  const DAY = 86400000, MIN = 60000;
   const KEY = 'rektion_trainer_v1';
   const now = () => Date.now();
   const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
@@ -517,8 +505,8 @@ body:before{
 
   function baseState(){
     return {
-      cards: starter.map(x => ({id:uid(),ru:x[0],de:x[1],model:x[2],tags:x[3],note:x[4],created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]})),
-      settings:{newLimit:15,reviewLimit:0,direction:'ru-de',studyMode:'builder',autoSpeak:true,voiceURI:'',speechRate:.88,theme:'light'},
+      cards: starter.map(x => ({id:uid(),ru:x[0],de:x[1],model:x[2],tags:x[3],note:x[4],created:now(),groupId:null})),
+      groups:[],settings:{direction:'ru-de',studyMode:'builder',autoSpeak:true,voiceURI:'',speechRate:.88,theme:'light'},
       logs:[], version:1
     };
   }
@@ -530,46 +518,102 @@ body:before{
   if(!Number.isFinite(+state.settings.speechRate)) state.settings.speechRate=.88;
   if(!state.logs) state.logs=[];
   if(!state.cards) state.cards=[];
-  let currentView='home', queue=[], qIndex=0, revealed=false, lastAction=null, extraMode=false, editId=null;
+  function normalizeLibrary(){if(!Array.isArray(state.groups))state.groups=[];for(const c of state.cards)if(c.groupId===undefined)c.groupId=null;}
+  normalizeLibrary();
+  let currentView='home', queue=[], qIndex=0, revealed=false, lastAction=null, editId=null, activeGroup='all', sessionGood=0;
   let builderBlocks=[], builderIndex=0, builderTargets=[0,1], builderOptionsCache={}, builderMistakes=0;
 
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
   function save(){localStorage.setItem(KEY,JSON.stringify(state));}
   function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
-  function fmtDate(ts){return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(new Date(ts))}
-  function fmtInterval(ms){if(ms<DAY) return `${Math.max(1,Math.round(ms/MIN))} мин`; const d=Math.max(1,Math.round(ms/DAY)); return d===1?'1 день':d<5?`${d} дня`:`${d} дней`}
-  function directionFor(card){ if(state.settings.direction==='mixed') return (card.reps%2===0?'ru-de':'de-ru'); return state.settings.direction; }
-  function status(card){ if(card.reps===0) return 'new'; if(card.interval>=21) return 'known'; return card.due<=now()?'due':'learning'; }
-  function newTodayUsed(){ const k=todayKey(); return state.logs.filter(l=>l.date===k && l.wasNew).length; }
-  function dueCards(){ return state.cards.filter(c=>c.reps>0 && c.due<=now()).sort((a,b)=>a.due-b.due); }
-  function newCards(){ const used=newTodayUsed(), left=Math.max(0,state.settings.newLimit-used); return state.cards.filter(c=>c.reps===0).slice(0,left); }
-  function matureCount(){return state.cards.filter(c=>c.interval>=21).length}
+  function groupName(id){
+    if(id==='all')return 'Все предложения';
+    if(!id||id==='ungrouped')return 'Без группы';
+    return state.groups.find(g=>g.id===id)?.name||'Без группы';
+  }
+  function groupCount(id){return state.cards.filter(c=>id==='all'||(id==='ungrouped'?!c.groupId:c.groupId===id)).length;}
+  function groupOptions(includeAll=false){
+    return (includeAll?'<option value="all">Все группы</option>':'')+'<option value="">Без группы</option>'+
+      state.groups.map(g=>'<option value="'+esc(g.id)+'">'+esc(g.name)+'</option>').join('');
+  }
+  function refreshGroupSelects(){
+    for(const id of ['fGroup','bulkGroup','groupFilter','moveDest']){
+      const el=$('#'+id);if(!el)continue;const val=el.value;
+      el.innerHTML=groupOptions(id==='groupFilter');
+      if([...el.options].some(o=>o.value===val))el.value=val;
+      else if(id==='groupFilter')el.value='all';
+    }
+  }
   function renderHome(){
-    const due=dueCards(); const fresh=newCards();
-    $('#sDue').textContent=due.length; $('#sNew').textContent=fresh.length; $('#sKnown').textContent=matureCount(); $('#sTotal').textContent=state.cards.length;
-    $('#todayDue').textContent=due.length; $('#todayNew').textContent=fresh.length; $('#todayLabel').textContent=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long'}).format(new Date());
-    const days=[...new Set(state.logs.map(l=>l.date))].sort().reverse(); let streak=0; let d=new Date();
-    for(let i=0;i<400;i++){ const key=todayKey(d.getTime()); if(days.includes(key)){streak++;d.setDate(d.getDate()-1)} else { if(i===0){d.setDate(d.getDate()-1);continue;} break; } }
-    $('#streak').textContent=`${streak} дн.`;
-    $('#startBtn').textContent=(due.length+fresh.length)?`Начать · ${due.length+fresh.length}`:'На сегодня всё';
+    refreshGroupSelects();
+    $('#sTotal').textContent=state.cards.length;
+    $('#sGroups').textContent=state.groups.length;
+    $('#sAnswers').textContent=state.logs.length;
+    $('#startBtn').disabled=!state.cards.length;
+    $('#groupCountLabel').textContent=state.groups.length+' групп';
+    const all=[...state.groups,{id:'ungrouped',name:'Без группы',fixed:true}];
+    $('#groupList').innerHTML=all.map(g=>{
+      const n=groupCount(g.id);
+      return '<div class="my-group"><div><b>'+esc(g.name)+'</b><div class="muted">'+n+' предложений</div></div>'+
+        '<div class="controls"><button class="primary" data-train="'+esc(g.id)+'" '+(!n?'disabled':'')+'>Тренировать</button>'+
+        '<button class="secondary" data-addgroup="'+esc(g.id)+'">Добавить</button>'+
+        (g.fixed?'':'<button class="secondary" data-rename="'+esc(g.id)+'">Имя</button><button class="secondary danger" data-delgroup="'+esc(g.id)+'">Удалить</button>')+
+        '</div></div>';
+    }).join('');
+    $$('#groupList [data-train]').forEach(b=>b.onclick=()=>buildQueue(b.dataset.train));
+    $$('#groupList [data-addgroup]').forEach(b=>b.onclick=()=>jumpAddGroup(b.dataset.addgroup));
+    $$('#groupList [data-rename]').forEach(b=>b.onclick=()=>renameGroup(b.dataset.rename));
+    $$('#groupList [data-delgroup]').forEach(b=>b.onclick=()=>deleteGroup(b.dataset.delgroup));
   }
-  function switchView(v){ currentView=v; $$('.view').forEach(x=>x.classList.add('hidden')); $(`#view-${v}`).classList.remove('hidden'); $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v)); if(v==='home')renderHome(); if(v==='cards')renderCards(); if(v==='stats')renderStats(); if(v==='settings')renderSettings(); }
-  function buildQueue(extra=false){
-    extraMode=extra;
-    if(extra){ const ids=[...new Set(state.logs.filter(l=>l.date===todayKey()).map(l=>l.cardId))]; queue=ids.map(id=>state.cards.find(c=>c.id===id)).filter(Boolean); }
-    else { let due=dueCards(); if(state.settings.reviewLimit>0) due=due.slice(0,state.settings.reviewLimit); queue=[...due,...newCards()]; }
-    qIndex=0; revealed=false; switchView('study'); renderStudy();
+  function createGroup(){
+    const name=$('#newGroupName').value.trim();if(!name)return toast('Введи название группы');
+    if(state.groups.some(g=>g.name.toLowerCase()===name.toLowerCase()))return toast('Такая группа уже существует');
+    state.groups.push({id:uid(),name});save();$('#newGroupName').value='';renderHome();toast('Группа создана');
   }
+  function renameGroup(id){
+    const g=state.groups.find(x=>x.id===id);if(!g)return;
+    const value=prompt('Новое название',g.name);if(value===null)return;
+    const name=value.trim();if(!name)return toast('Название пустое');
+    if(state.groups.some(x=>x.id!==id&&x.name.toLowerCase()===name.toLowerCase()))return toast('Такое название уже есть');
+    g.name=name.slice(0,100);save();renderHome();toast('Группа переименована');
+  }
+  function deleteGroup(id){
+    const g=state.groups.find(x=>x.id===id);if(!g)return;
+    if(!confirm('Удалить группу «'+g.name+'»? Предложения останутся без группы.'))return;
+    for(const c of state.cards)if(c.groupId===id)c.groupId=null;
+    state.groups=state.groups.filter(x=>x.id!==id);save();renderHome();toast('Группа удалена, карточки сохранены');
+  }
+  function jumpAddGroup(id){
+    switchView('add');const value=id==='ungrouped'?'':id;
+    $('#fGroup').value=value;$('#bulkGroup').value=value;
+  }
+  function switchView(v){
+    if(v==='study'&&!queue.length)v='home';
+    currentView=v;$$('.view').forEach(x=>x.classList.add('hidden'));$('#view-'+v).classList.remove('hidden');
+    $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+    if(v==='home')renderHome();if(v==='cards')renderCards();if(v==='add')refreshGroupSelects();
+    if(v==='stats')renderStats();if(v==='settings')renderSettings();
+  }
+  function shuffleList(items){
+    const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;
+  }
+  function buildQueue(groupId='all'){
+    activeGroup=groupId;
+    queue=shuffleList(state.cards.filter(c=>groupId==='all'||(groupId==='ungrouped'?!c.groupId:c.groupId===groupId)));
+    qIndex=0;revealed=false;sessionGood=0;lastAction=null;
+    if(!queue.length){toast('В группе нет предложений');return;}
+    switchView('study');renderStudy();
+  }
+  function directionFor(card){return state.settings.direction==='mixed'?(qIndex%2===0?'ru-de':'de-ru'):state.settings.direction;}
   function renderStudy(){
     const done=qIndex>=queue.length || queue.length===0;
     $('#studyCard').classList.toggle('hidden',done); $('#studyDone').classList.toggle('hidden',!done);
-    if(done){$('#queueInfo').textContent='готово';$('#studyProgress').style.width='100%';return}
+    if(done){$('#queueInfo').textContent='готово';$('#studyProgress').style.width='100%';$('#studyDoneSummary').textContent='Карточек: '+queue.length+'. Ответов «Знаю» или «Легко»: '+sessionGood+'. Можешь повторить группу в любой момент.';return}
     const c=queue[qIndex];
     revealed=false;
     $('#answerBox').classList.add('hidden'); $('#rateActions').classList.add('hidden');
     $('#queueInfo').textContent=`${qIndex+1} / ${queue.length}`; $('#studyProgress').style.width=`${(qIndex/queue.length)*100}%`;
-    const st=status(c); $('#cardTag').textContent= st==='new'?'новая':st==='known'?'закреплено':st==='due'?'повтор':'в обучении';
-    const ints=previewIntervals(c); $('#againInt').textContent=fmtInterval(ints.again);$('#hardInt').textContent=fmtInterval(ints.hard);$('#goodInt').textContent=fmtInterval(ints.good);$('#easyInt').textContent=fmtInterval(ints.easy);
+    $('#cardTag').textContent=groupName(c.groupId);
 
     if((state.settings.studyMode||'builder')==='builder'){
       $('#directionInfo').textContent='Конструктор · Русский → немецкий';
@@ -729,22 +773,20 @@ body:before{
     if((state.settings.studyMode||'builder')==='builder')return;
     if(qIndex>=queue.length||revealed)return; revealed=true; $('#answerBox').classList.remove('hidden');$('#revealActions').classList.add('hidden');$('#rateActions').classList.remove('hidden'); const c=queue[qIndex]; if(state.settings.autoSpeak && directionFor(c)==='ru-de') speak(c.de);
   }
-  function previewIntervals(c){
-    if(c.reps===0) return {again:10*MIN,hard:DAY,good:2*DAY,easy:4*DAY};
-    const base=Math.max(1,c.interval||1); return {again:10*MIN,hard:Math.max(DAY,Math.round(base*1.2*DAY)),good:Math.max(2*DAY,Math.round(base*c.ease*DAY)),easy:Math.max(4*DAY,Math.round(base*(c.ease+.65)*DAY))};
-  }
   function grade(g){
-    if(qIndex>=queue.length||!revealed)return; const c=queue[qIndex]; const before=JSON.parse(JSON.stringify(c)); const logLen=state.logs.length; const wasNew=c.reps===0; const t=now(); let delay;
-    if(!extraMode){
-      if(g==='again'){c.lapses++;c.ease=Math.max(1.3,c.ease-.2);c.interval=0;c.due=t+10*MIN;delay=10*MIN;}
-      if(g==='hard'){c.ease=Math.max(1.3,c.ease-.15);c.interval=c.reps===0?1:Math.max(1,Math.round(Math.max(1,c.interval)*1.2));c.due=t+c.interval*DAY;delay=c.interval*DAY;}
-      if(g==='good'){c.interval=c.reps===0?2:Math.max(2,Math.round(Math.max(1,c.interval)*c.ease));c.due=t+c.interval*DAY;delay=c.interval*DAY;}
-      if(g==='easy'){c.ease+=.15;c.interval=c.reps===0?4:Math.max(4,Math.round(Math.max(1,c.interval)*(c.ease+.5)));c.due=t+c.interval*DAY;delay=c.interval*DAY;}
-      c.reps++; c.last=t; c.history.push({t,grade:g,due:c.due,interval:c.interval,ease:c.ease});
-    } else delay=0;
-    state.logs.push({t,date:todayKey(t),cardId:c.id,grade:g,wasNew,extra:extraMode}); lastAction={cardId:c.id,before,logLen,qIndex}; save(); qIndex++; renderStudy(); renderHome();
+    if(qIndex>=queue.length||!revealed)return;
+    const c=queue[qIndex],t=now(),logLen=state.logs.length;
+    lastAction={qIndex,logLen,sessionGood};
+    if(g==='good'||g==='easy')sessionGood++;
+    state.logs.push({t,date:todayKey(t),cardId:c.id,grade:g,groupId:c.groupId});
+    save();qIndex++;renderStudy();renderHome();
   }
-  function undo(){ if(!lastAction)return toast('Нечего отменять'); const idx=state.cards.findIndex(c=>c.id===lastAction.cardId); if(idx>=0)state.cards[idx]=lastAction.before; state.logs=state.logs.slice(0,lastAction.logLen); qIndex=lastAction.qIndex; lastAction=null; save();renderStudy();renderHome();toast('Последний ответ отменён'); }
+  function undo(){
+    if(!lastAction)return toast('Нечего отменить');
+    qIndex=lastAction.qIndex;sessionGood=lastAction.sessionGood;
+    state.logs=state.logs.slice(0,lastAction.logLen);
+    lastAction=null;save();renderStudy();renderHome();toast('Ответ отменён');
+  }
   function germanVoices(){
     if(!('speechSynthesis' in window)) return [];
     return speechSynthesis.getVoices()
@@ -787,16 +829,28 @@ body:before{
     const r=rate?rate.value:.88;
     speakWith('Guten Tag. Ich bereite mich auf die Prüfung vor und freue mich auf das neue Semester.',uri,r);
   }
+  function filteredCards(){
+    const q=$('#searchInput').value.trim().toLowerCase(),group=$('#groupFilter').value;
+    return state.cards.filter(c=>(group==='all'||(group===''?!c.groupId:c.groupId===group))&&
+      (!q||[c.ru,c.de,c.model,c.tags,c.note,groupName(c.groupId)].join(' ').toLowerCase().includes(q)));
+  }
   function renderCards(){
-    const q=$('#searchInput').value.trim().toLowerCase(); const list=state.cards.filter(c=>!q||[c.ru,c.de,c.model,c.tags,c.note].join(' ').toLowerCase().includes(q)); const el=$('#cardsList');
-    if(!list.length){el.innerHTML='<div class="empty">Ничего не найдено</div>';return}
-    el.innerHTML=list.map(c=>{const st=status(c),label=st==='new'?'новая':st==='known'?'закреплено':st==='due'?'сегодня':`повтор ${fmtDate(c.due)}`;return `<div class="row cardrow" data-id="${c.id}"><div><div class="de">${esc(c.model||'без модели')}</div><div class="muted" style="font-size:12px;margin-top:4px">${esc(c.tags||'')}</div></div><div><div>${esc(c.de)}</div><div class="ru">${esc(c.ru)}</div></div><span class="pill ${st}">${label}</span></div>`}).join('');
+    refreshGroupSelects();const list=filteredCards(),el=$('#cardsList');
+    if(!list.length){el.innerHTML='<div class="empty">Карточек пока нет</div>';return;}
+    el.innerHTML=list.map(c=>'<div class="row cardrow" data-id="'+esc(c.id)+'"><div><div class="de">'+esc(c.model||'без модели')+'</div><div class="muted" style="font-size:12px;margin-top:4px">'+esc(groupName(c.groupId))+' · '+esc(c.tags||'')+'</div></div><div><div>'+esc(c.de)+'</div><div class="ru">'+esc(c.ru)+'</div></div><span class="pill">Изменить</span></div>').join('');
     $$('.cardrow').forEach(r=>r.onclick=()=>editCard(r.dataset.id));
   }
+  function moveFilteredCards(){
+    const items=filteredCards();if(!items.length)return toast('Нет карточек для переноса');
+    const dest=$('#moveDest').value;
+    if(!confirm('Перенести '+items.length+' предложений в группу «'+groupName(dest)+'»?'))return;
+    for(const c of items)c.groupId=dest||null;
+    save();renderCards();toast('Карточки перенесены');
+  }
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-  function editCard(id){const c=state.cards.find(x=>x.id===id);if(!c)return;editId=id;$('#fRu').value=c.ru;$('#fDe').value=c.de;$('#fModel').value=c.model||'';$('#fTags').value=c.tags||'';$('#fNote').value=c.note||'';$('#addOneBtn').textContent='Сохранить изменения';$('#cancelEditBtn').classList.remove('hidden');switchView('add');}
+  function editCard(id){const c=state.cards.find(x=>x.id===id);if(!c)return;editId=id;$('#fRu').value=c.ru;$('#fDe').value=c.de;$('#fModel').value=c.model||'';$('#fTags').value=c.tags||'';$('#fNote').value=c.note||'';refreshGroupSelects();$('#fGroup').value=c.groupId||'';$('#addOneBtn').textContent='Сохранить изменения';$('#cancelEditBtn').classList.remove('hidden');switchView('add');}
   function clearForm(){editId=null;['#fRu','#fDe','#fModel','#fTags','#fNote'].forEach(x=>$(x).value='');$('#addOneBtn').textContent='Добавить';$('#cancelEditBtn').classList.add('hidden');}
-  function addOne(){const ru=$('#fRu').value.trim(),de=$('#fDe').value.trim();if(!ru||!de)return toast('Нужны русский и немецкий тексты');const obj={ru,de,model:$('#fModel').value.trim(),tags:$('#fTags').value.trim(),note:$('#fNote').value.trim()};if(editId){Object.assign(state.cards.find(c=>c.id===editId),obj);toast('Карточка сохранена')}else{state.cards.push({id:uid(),...obj,created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});toast('Карточка добавлена')}save();clearForm();renderHome();}
+  function addOne(){const ru=$('#fRu').value.trim(),de=$('#fDe').value.trim();if(!ru||!de)return toast('Нужны русский и немецкий тексты');const obj={ru,de,model:$('#fModel').value.trim(),tags:$('#fTags').value.trim(),note:$('#fNote').value.trim(),groupId:$('#fGroup').value||null};if(editId){Object.assign(state.cards.find(c=>c.id===editId),obj);toast('Карточка сохранена')}else{state.cards.push({id:uid(),...obj,created:now()});toast('Карточка добавлена')}save();clearForm();renderHome();}
   function xlsxColIndex(ref){const m=String(ref||'').match(/^([A-Z]+)/i);if(!m)return 0;let n=0;for(const ch of m[1].toUpperCase())n=n*26+(ch.charCodeAt(0)-64);return n-1;}
   function xmlDecode(s){
     return String(s??'')
@@ -874,37 +928,45 @@ body:before{
       for(const r of rows.slice(hasHeaders?1:0)){
         const get=k=>String(r[map[k]]??'').trim(),ru=get('ru'),de=get('de');if(!ru&&!de)continue;if(!ru||!de){incomplete++;continue;}
         const key=`${ru}\u0000${de}`;if(existing.has(key)){dupes++;continue;}existing.add(key);
-        state.cards.push({id:uid(),ru,de,model:get('model'),tags:get('tags'),note:get('note'),created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});added++;
+        state.cards.push({id:uid(),ru,de,model:get('model'),tags:get('tags'),note:get('note'),groupId:$('#bulkGroup').value||null,created:now()});added++;
       }
       save();renderHome();if(currentView==='cards')renderCards();let msg=`Добавлено: ${added}`;if(dupes)msg+=` · дублей пропущено: ${dupes}`;if(incomplete)msg+=` · неполных строк: ${incomplete}`;statusEl.textContent=msg;toast(`Excel: добавлено ${added}`);
     }catch(err){statusEl.textContent=`Не удалось импортировать: ${err&&err.message?err.message:'ошибка файла'}`;toast('Не удалось прочитать Excel');}
   }
-  function bulkImport(){const raw=$('#bulkInput').value.trim();if(!raw)return toast('Вставь данные');let added=0;for(const line of raw.split(/\r?\n/)){if(!line.trim())continue;const sep=line.includes('\t')?'\t':'|';const p=line.split(sep).map(s=>s.trim());if(p.length<2||!p[0]||!p[1])continue;state.cards.push({id:uid(),ru:p[0],de:p[1],model:p[2]||'',tags:p[3]||'',note:p[4]||'',created:now(),due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]});added++;}save();$('#bulkInput').value='';renderHome();toast(`Добавлено: ${added}`);}
+  function bulkImport(){const raw=$('#bulkInput').value.trim();if(!raw)return toast('Вставь данные');let added=0;for(const line of raw.split(/\r?\n/)){if(!line.trim())continue;const sep=line.includes('\t')?'\t':'|';const p=line.split(sep).map(s=>s.trim());if(p.length<2||!p[0]||!p[1])continue;state.cards.push({id:uid(),ru:p[0],de:p[1],model:p[2]||'',tags:p[3]||'',note:p[4]||'',groupId:$('#bulkGroup').value||null,created:now()});added++;}save();$('#bulkInput').value='';renderHome();toast(`Добавлено: ${added}`);}
   function renderStats(){
-    const start=new Date();start.setHours(0,0,0,0);const days=[];for(let i=13;i>=0;i--){const d=new Date(start);d.setDate(d.getDate()-i);days.push(todayKey(d.getTime()))}const counts=days.map(k=>state.logs.filter(l=>l.date===k).length),max=Math.max(1,...counts);$('#barChart').innerHTML=counts.map(n=>`<div class="bar" title="${n} ответов" style="height:${Math.max(2,n/max*100)}%"></div>`).join('');$('#barLabels').innerHTML=days.map(k=>`<span>${k.slice(8)}</span>`).join('');$('#reviewTotal').textContent=`${counts.reduce((a,b)=>a+b,0)} ответов`;
-    $('#stNew').textContent=state.cards.filter(c=>c.reps===0).length;$('#stLearning').textContent=state.cards.filter(c=>c.reps>0&&c.interval<21).length;$('#stMature').textContent=matureCount();$('#stLapses').textContent=state.cards.reduce((a,c)=>a+(c.lapses||0),0);
-    for(const g of ['again','hard','good','easy'])$(`#st${g[0].toUpperCase()+g.slice(1)}`).textContent=state.logs.filter(l=>l.grade===g).length;
+    const start=new Date();start.setHours(0,0,0,0);const days=[];
+    for(let i=13;i>=0;i--){const d=new Date(start);d.setDate(d.getDate()-i);days.push(todayKey(d.getTime()));}
+    const counts=days.map(k=>state.logs.filter(l=>l.date===k).length),max=Math.max(1,...counts);
+    $('#barChart').innerHTML=counts.map(n=>'<div class="bar" title="'+n+' ответов" style="height:'+Math.max(2,n/max*100)+'%"></div>').join('');
+    $('#barLabels').innerHTML=days.map(k=>'<span>'+k.slice(8)+'</span>').join('');
+    $('#reviewTotal').textContent=counts.reduce((a,b)=>a+b,0)+' ответов';
+    $('#stCards').textContent=state.cards.length;$('#stGroups').textContent=state.groups.length;
+    for(const g of ['again','hard','good','easy'])$('#st'+g[0].toUpperCase()+g.slice(1)).textContent=state.logs.filter(l=>l.grade===g).length;
   }
   function renderSettings(){
-    $('#setNewLimit').value=state.settings.newLimit;$('#setReviewLimit').value=state.settings.reviewLimit;$('#setStudyMode').value=state.settings.studyMode||'builder';$('#setDirection').value=state.settings.direction;$('#setAutoSpeak').checked=!!state.settings.autoSpeak;
-    $('#setSpeechRate').value=String(state.settings.speechRate||.88); populateVoiceSelect();
-    setTimeout(populateVoiceSelect,250); setTimeout(populateVoiceSelect,1000);
+    $('#setStudyMode').value=state.settings.studyMode||'builder';
+    $('#setDirection').value=state.settings.direction||'ru-de';
+    $('#setAutoSpeak').checked=!!state.settings.autoSpeak;
+    $('#setSpeechRate').value=String(state.settings.speechRate||.88);
+    populateVoiceSelect();setTimeout(populateVoiceSelect,250);setTimeout(populateVoiceSelect,1000);
   }
   function applyTheme(){document.documentElement.dataset.theme=state.settings.theme||'light';}
-  function saveSettings(){state.settings.newLimit=Math.max(0,+$('#setNewLimit').value||0);state.settings.reviewLimit=Math.max(0,+$('#setReviewLimit').value||0);state.settings.studyMode=$('#setStudyMode').value;state.settings.direction=$('#setDirection').value;state.settings.autoSpeak=$('#setAutoSpeak').checked;state.settings.voiceURI=$('#setVoice').value||'';state.settings.speechRate=Math.min(1.25,Math.max(.6,+$('#setSpeechRate').value||.88));save();renderHome();toast('Настройки сохранены')}
+  function saveSettings(){state.settings.studyMode=$('#setStudyMode').value;state.settings.direction=$('#setDirection').value;state.settings.autoSpeak=$('#setAutoSpeak').checked;state.settings.voiceURI=$('#setVoice').value||'';state.settings.speechRate=Math.min(1.25,Math.max(.6,+$('#setSpeechRate').value||.88));save();renderHome();toast('Настройки сохранены')}
   function download(name,text,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
   function exportJson(){download(`rektion-backup-${todayKey()}.json`,JSON.stringify(state,null,2));}
   function templateCsv(){download('rektion-import-template.tsv','Русский\tDeutsch\tМодель\tТеги\tКомментарий\nЯ подаю заявление на визу.\tIch beantrage ein Visum.\tbeantragen + A\tVerwaltung\tофициальный запрос\n','text/tab-separated-values;charset=utf-8')}
-  function resetSchedule(){if(!confirm('Сбросить интервалы и прогресс, но оставить все карточки?'))return;state.cards.forEach(c=>Object.assign(c,{due:now(),interval:0,ease:2.5,reps:0,lapses:0,last:null,history:[]}));state.logs=[];save();renderHome();toast('Расписание сброшено')}
-  function resetAll(){if(!confirm('Удалить все карточки и прогресс? Это нельзя отменить без резервной копии.'))return;state={...baseState(),cards:[]};save();applyTheme();renderHome();toast('Все данные удалены')}
+  function resetStats(){if(!confirm('Очистить историю оценок? Группы и карточки останутся.'))return;state.logs=[];save();renderHome();toast('Оценки очищены');}
+  function resetAll(){if(!confirm('Удалить все карточки и прогресс? Это нельзя отменить без резервной копии.'))return;state={...baseState(),cards:[],groups:[]};save();applyTheme();renderHome();toast('Все данные удалены')}
 
+  $('#createGroupBtn').onclick=createGroup;$('#newGroupName').onkeydown=e=>{if(e.key==='Enter')createGroup()};
   $$('#nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view)); $$('[data-jump]').forEach(b=>b.onclick=()=>switchView(b.dataset.jump));
-  $('#startBtn').onclick=()=>buildQueue(false);$('#revealBtn').onclick=reveal;$$('[data-grade]').forEach(b=>b.onclick=()=>grade(b.dataset.grade));$('#extraBtn').onclick=()=>buildQueue(true);
+  $('#startBtn').onclick=()=>buildQueue('all');$('#revealBtn').onclick=reveal;$$('[data-grade]').forEach(b=>b.onclick=()=>grade(b.dataset.grade));$('#extraBtn').onclick=()=>buildQueue(activeGroup);
   $('#speakPromptBtn').onclick=()=>{const c=queue[qIndex];if(c)speak(c.de)};$('#speakAnswerBtn').onclick=()=>{const c=queue[qIndex];if(c)speak(c.de)};
-  $('#searchInput').oninput=renderCards;$('#addOneBtn').onclick=addOne;$('#cancelEditBtn').onclick=clearForm;$('#bulkBtn').onclick=bulkImport;$('#downloadTemplateBtn').onclick=templateCsv;
+  $('#searchInput').oninput=renderCards;$('#groupFilter').onchange=renderCards;$('#moveFilteredBtn').onclick=moveFilteredCards;$('#addOneBtn').onclick=addOne;$('#cancelEditBtn').onclick=clearForm;$('#bulkBtn').onclick=bulkImport;$('#downloadTemplateBtn').onclick=templateCsv;
   $('#xlsxFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(f)await importXlsxFile(f);e.target.value='';};
-  $('#saveSettingsBtn').onclick=saveSettings;$('#testVoiceBtn').onclick=testSelectedVoice;$('#exportBtn').onclick=exportJson;$('#resetScheduleBtn').onclick=resetSchedule;$('#resetAllBtn').onclick=resetAll;
-  $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.cards||!s.settings)throw 0;state=s;save();applyTheme();renderHome();toast('Резервная копия импортирована')}catch{toast('Не удалось прочитать файл')}e.target.value='';};
+  $('#saveSettingsBtn').onclick=saveSettings;$('#testVoiceBtn').onclick=testSelectedVoice;$('#exportBtn').onclick=exportJson;$('#resetStatsBtn').onclick=resetStats;$('#resetAllBtn').onclick=resetAll;
+  $('#importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.cards||!s.settings)throw 0;state=s;normalizeLibrary();save();applyTheme();renderHome();toast('Резервная копия импортирована')}catch{toast('Не удалось прочитать файл')}e.target.value='';};
   $('#themeBtn').onclick=()=>{state.settings.theme=(state.settings.theme==='dark'?'light':'dark');save();applyTheme();};
   document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;if(e.code==='Space'&&currentView==='study'&&(state.settings.studyMode||'builder')!=='builder'){e.preventDefault();reveal()}if(currentView==='study'&&revealed&&['1','2','3','4'].includes(e.key)){grade({1:'again',2:'hard',3:'good',4:'easy'}[e.key])}if(e.key.toLowerCase()==='z'&&currentView==='study')undo();});
   if('speechSynthesis' in window){
