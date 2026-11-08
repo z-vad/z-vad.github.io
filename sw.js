@@ -1,4 +1,4 @@
-const CACHE = 'rektion-vocab-five-words-v4';
+const CACHE = 'rektion-vocab-optional-five-v5';
 const APP_SHELL = [
   './',
   './index.html',
