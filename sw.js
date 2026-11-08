@@ -1,4 +1,4 @@
-const CACHE = 'rektion-groups-v1';
+const CACHE = 'rektion-vocab-v2';
 const APP_SHELL = [
   './',
   './index.html',
